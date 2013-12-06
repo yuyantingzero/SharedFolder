@@ -1,0 +1,51 @@
+#
+#	Cache scheduling default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Cache declaration
+
+    # Load scheduling strategy
+    # NONE=0; ANALYZE=1; LAT_STALL=2; USE_STALL=3
+    #    NONE => ignore all the rest of the parms in this section
+    #            no load scheduling
+    #    ANALYZE => analyze for load scheduling but no load scheduling
+    #    LAT_STALL => load schedule for machine supports load latency stalling
+    #            if load op doesn't complete within load latency, stall
+    #            regardless of whether loaded value is needed
+    #    USE_STALL => load schedule for machine supporting load use stalling
+    #            load op causes machine stall only if value loaded
+    #            is not available (due to cache miss) and value
+    #            is needed by an op to be issued
+    load_sched = 0;
+
+    # threshold used to determine if op should be converted to long latency
+    # under LAT_STALL
+    load_thresh = 0.25;
+
+    # Type of load scheduling to perform
+    # NONE = 0; LONG_LATENCY=1; PREFETCHES=2; ADVANCED_LOADS=4;
+    #    should be non-zero for load_sched == USE_STALL
+    #    determines whether load-use distance is increased in schedule
+    #    (LONG_LATENCY) or
+    #    load is converted to prefetch-load pair (PREFETCHES) or
+    #    load is converted to lds/ldv pair (ADVANCED_LOADS)
+    load_sched_type = 0;
+
+    # Use resource bound to estimate slack (currently only for load scheduling)
+    # use resource distances, number of ops available for sandwiching between
+    # load op and its use, in determining load-use edge latencies for scheduling
+    use_res_dist = no;
+
+    # threshold for determining whether to break edge from store to load
+    # for advanced loads
+    alias_thresh = 0.1;
+
+    # penalty for each dynamic instance that a lds moves above an aliasing
+    # store; used during evaluation of advanced; load placement implementation
+    # based on profile information
+    alias_penalty = 50;
+
+end)

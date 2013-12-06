@@ -1,0 +1,684 @@
+#!/bin/sh
+
+SCRIPT_NAME="tccarm"
+TRIMARAN_HOST_TYPE="" 			#default hp, can be x86lin
+HOST_OPTION_SET=0			#host set is false
+STAGE_OPTION_SET=0			#-s option set
+
+BENCHMARK=""
+BENCHMARK_SET=0          		# flag indicating when benchmark has been set
+
+REGION_TYPE="-c2O_tr" 	  		#default basic block
+REGION_TYPE_SUBSTR="O_tr"		#default basic block
+REGION_TYPE_SPECIFIED=0 		#if region type not specified, defaults to bb
+LIST_OF_REGIONS=""
+
+IMPACT_PROJECT="full"
+IMPACT_PROJECT_SET=0
+
+VALID_ARGS=1      		 	#true
+IS_TRI_HOME_SET=0       		#false
+OPTIMIZATION_LEVEL=1
+INLINING=""               		# inline by default
+USE_STD_MDES=1           		# use standard MDES file unless otherwise specified
+ARGS_TO_COMPILEBENCH="" 		# stores arguments to be passed on to cb
+ARGS_TO_ELCOR=""
+# by default, run all stages
+RUN_IMPACT=1
+RUN_ELCOR=1
+RUN_ARM_TRANS=1
+RUN_ARM_TRANS_BIN=1
+
+SIMULATOR="sim-safe"                    # What version of SimpleScalar to use.
+SIMULATOR_ARGS=""                       # Command line arguments to SimpleScalar.
+
+CLEAN_DIRS=0				#does not remove intermed dirs before running
+RUN_ONLY=0
+NICE_VALUE=10
+
+if [ $# -eq 0 ]; then
+   echo "$SCRIPT_NAME: Error: Wrong Usage";
+   echo "Type $SCRIPT_NAME -help for syntax";
+   VALID_ARGS=0;
+   exit 1;
+fi
+
+#check if env variable TRIMARAN_ROOT is set
+tri_root="${TRIMARAN_ROOT}"
+if [ "$tri_root" = "" ]; then
+   IS_TRI_HOME_SET=0;
+else
+   IS_TRI_HOME_SET=1;
+   echo "Using value or env variable ${TRIMARAN_ROOT} as TRIMARAN_ROOT!";
+fi
+
+while [ $# -gt 0 -a $VALID_ARGS -eq 1 ]
+do
+
+ # get the next option specified
+ OPTION="$1";
+ shift
+
+ case $OPTION in
+   -region)
+      if [ $# -eq 0 ]; then
+	 echo "$SCRIPT_NAME: Error : Region type has to be specified after $OPTION!"
+	 exit 1;
+      else
+	 reg_option=$1;
+	 shift
+	 case $reg_option in
+	   b|basic)
+	    REGION_TYPE_SPECIFIED=1;
+	    REGION_TYPE_SUBSTR="O_tr";
+	    REGION_TYPE="-c2O_tr";;
+           s|super)
+	    REGION_TYPE_SPECIFIED=1;
+	    REGION_TYPE_SUBSTR="S_tr";
+	    REGION_TYPE="-c2S_tr";;
+	   h|hyper)
+	    REGION_TYPE_SPECIFIED=1;
+	    REGION_TYPE_SUBSTR="HS_tr";
+	    REGION_TYPE="-c2HS_tr";
+	    echo "What the fuck are you trying to do!?";
+	    echo "  You can't make hyperblocks in ARM code.";
+	    exit 1;;
+	   all)
+	    REGION_TYPE_SPECIFIED=1;
+	    REGION_TYPE_SUBSTR="O_tr S_tr HS_tr";
+	    REGION_TYPE="-c2O_tr -c2S_tr";;
+	   *)
+	    echo "$SCRIPT_NAME: Error: Invalid region option, $reg_option , must be b|s|h";
+	    exit 1;;
+	 esac
+	 ARGS_TO_COMPILEBENCH="$ARGS_TO_COMPILEBENCH $REGION_TYPE";
+      fi;;
+
+   -bench)
+      if [ $# -eq 0 ]; then
+	 echo "$SCRIPT_NAME: Error : A benchmark has to be specified after $OPTION!"
+	 exit 1;
+      else
+	 BENCHMARK=$1;
+	 BENCHMARK_SET=1;
+         shift;
+      fi;;
+
+   -nice)
+      if [ $# -eq 0 ]; then
+	 echo "$SCRIPT_NAME: Error : A value has to be specified after $OPTION!"
+      exit 1;
+      else
+	 NICE_VALUE=$1
+	 shift;
+      fi;;
+
+   -clean)
+      CLEAN_DIRS=1;;
+
+   -noinlining)
+      INLINING="-noinlining";;
+
+   -s*)
+      stage_option=${OPTION##-s};
+      case $stage_option in
+	i|impact)
+	 RUN_ELCOR=0;RUN_ARM_TRANS=0;RUN_ARM_TRANS_BIN=0;;
+        e|elcor)
+	 RUN_ARM_TRANS=0;RUN_ARM_TRANS_BIN=0;;
+	s|simu)
+	 RUN_ARM_TRANS_BIN=0;;
+        r|run)
+         ;;
+        *)
+         echo "$SCRIPT_NAME: Error : A stage, i|e|s|r has to be specified after $OPTION!"
+         echo "$SCRIPT_NAME: Error: Invalid option after $OPTION";
+         exit 1;;
+      esac
+      STAGE_OPTION_SET=1;;
+
+   -i2i)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=1;RUN_ELCOR=0;RUN_ARM_TRANS=0;RUN_ARM_TRANS_BIN=0;;
+
+   -i2e)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=1;RUN_ELCOR=1;RUN_ARM_TRANS=0;RUN_ARM_TRANS_BIN=0;;
+
+   -i2s)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=1;RUN_ELCOR=1;RUN_ARM_TRANS=1;RUN_ARM_TRANS_BIN=0;;
+
+   -i2r)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=1;RUN_ELCOR=1;RUN_ARM_TRANS=1;RUN_ARM_TRANS_BIN=1;;
+
+   -e2e)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=0;RUN_ELCOR=1;RUN_ARM_TRANS=0;RUN_ARM_TRANS_BIN=0;;
+
+   -e2s)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=0;RUN_ELCOR=1;RUN_ARM_TRANS=1;RUN_ARM_TRANS_BIN=0;;
+
+   -e2r)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=0;RUN_ELCOR=1;RUN_ARM_TRANS=1;RUN_ARM_TRANS_BIN=1;;
+
+   -m2s)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=0;RUN_ELCOR=0;RUN_ARM_TRANS=1;RUN_ARM_TRANS_BIN=0;;
+
+   -m2r)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=0;RUN_ELCOR=0;RUN_ARM_TRANS=1;RUN_ARM_TRANS_BIN=1;;
+
+   -m2m)
+      if [ $STAGE_OPTION_SET -eq 1 ]; then
+	 echo "$SCRIPT_NAME: Error: -s and $OPTION cannot be used together!"
+	 exit 1;
+      fi
+      RUN_ONLY=1;RUN_IMPACT=0;RUN_ELCOR=0;RUN_ARM_TRANS=0;RUN_ARM_TRANS_BIN=1;;
+   -I*)
+      ARGS_TO_COMPILEBENCH="$ARGS_TO_COMPILEBENCH ${OPTION##-I}";;
+
+   -E*)
+      ARGS_TO_ELCOR=${OPTION##-E};;
+
+   -S*)
+      SIMULATOR_ARGS=${OPTION##-S};;
+
+   -T*)
+      sim_option=${OPTION##-T};
+      case $sim_option in
+	safe|sim-safe)
+	 SIMULATOR="sim-safe";;
+        fast|sim-fast)
+	 SIMULATOR="sim-fast";;
+	oo|sim-outorder)
+	 SIMULATOR="sim-outorder";;
+      esac;;
+
+   -O*)
+      OPTI=${OPTION##-O}
+      case $OPTI in
+	0 | 1 | 2 | 3 | 4) 
+         OPTIMIZATION_LEVEL=$OPTI;;
+        *)                 
+         VALID_ARGS=0;;
+      esac;;
+
+   -h|-help)
+     echo "Usage: $SCRIPT_NAME -bench benchmark_name -clean [options]"
+     echo "Where options is any of the following:" 	
+     echo ""
+     echo "	-bench		: 	name of benchmark"
+     echo "	-region		: 	region type. can be b|s|h|all"
+     echo "	-si|e|s|r	:	Specify stages in compilation"
+     echo " 	-I    		:	Arguments passed directly to compile_bench"
+     echo " 	-E    		:	Arguments passed directly to the elcor module"
+     echo "				e.g. -E\"-Fwhatever=yes -Fwhateverelse=no\" "
+     echo " 	-S   		:	Arguments passed directly to the simulator module"
+     echo " 	-T   		:	Which simulator to use: safe, fast, or oo"
+     echo "	-clean		:	Delete intermediate direcories before running"
+     echo "	-i2e|s|r	:	Compile from impact through elcor, simu or run simulated binary"
+     echo "	-e2s|r		:	Compile from elcor through simu or run simulated binary"
+     echo ""
+     exit 0;;
+
+   *)
+     echo "$SCRIPT_NAME: Error: Unknown option '${OPTION}'"
+     echo "Type $SCRIPT_NAME -help for syntax";
+     VALID_ARGS=0;
+     exit 1;;
+     esac
+done	
+
+if [ $VALID_ARGS -eq 1 ]; then
+   #host type
+   if [ $HOST_OPTION_SET -eq 0 ]; then
+      echo "$SCRIPT_NAME: Detecting Host Type.";
+      #detect host type
+      host_type=`exec uname`
+      case $host_type in
+	Linux) 
+	 TRIMARAN_HOST_TYPE="x86lin";;
+
+	HP-UX) 
+	 TRIMARAN_HOST_TYPE="hp";;
+
+	SunOS) 
+	 os_version=`exec uname -r`        
+  	 if [ $os_version -ge 4.0]; then            
+	    TRIMARAN_HOST_TYPE="sunsol"
+	 else   
+	    TRIMARAN_HOST_TYPE="sunos"
+         fi;;
+
+	*) 
+         puts "$SCRIPT_NAME: Unknown host type, $host_type!"
+	 exit 1;;
+
+      esac
+      export $TRIMARAN_HOST_TYPE
+      echo "$SCRIPT_NAME: TRIMARAN_HOST_TYPE set to $TRIMARAN_HOST_TYPE"
+   fi
+
+   #check for validity of trimaran home
+   if [ $IS_TRI_HOME_SET -eq 0  ]; then
+      echo "$SCRIPT_NAME: Error: Trimaran root not specified!";
+      exit 1;
+   fi
+
+   if [ ! -d ${TRIMARAN_ROOT} ]; then
+     echo "$SCRIPT_NAME: Error: Trimaran root, ${TRIMARAN_ROOT}, does not exist!";
+     exit 1;
+   fi
+
+   #check if project option set
+   if [ $IMPACT_PROJECT_SET -eq 0 ]; then
+      export DEFAULT_PROJECT=$IMPACT_PROJECT
+   fi
+
+   #trimaran root has a valid value. set all other env variables.
+   export CC=gcc
+   export CXX=gcc
+
+   export TRIMARAN_HOST_PLATFORM=$TRIMARAN_HOST_TYPE
+   export TRIMARAN_HOST_COMPILER=gcc
+
+   export IMPACT_HOST_PLATFORM=$TRIMARAN_HOST_TYPE
+   export IMPACT_HOST_COMPILER=gcc
+
+   if [ $BENCHMARK_SET -eq 1 ]; then
+     # USER_BENCH_PATH1 used to be set here, but now I moved it to envrc
+     # This makes more sense because:
+     #      1. This allows Impact command line utilities to be run
+     #         without explicitly setting it.
+     #      2. The setting is actually a configurable environment variable, 
+     #         not part of a script.
+     #      3. Even though it will have to be duplicated in envrc & envrc.bash,
+     #         previously, it was in tcc, tccarm, tccdvliw, & tccwims.
+     #                                           <lieberm 02/21/2007>
+    
+    found_bench=0;
+
+    for TEMP_BENCH in $USER_BENCH_PATH1
+    do
+	CUR_BENCH_PATH=`echo $TEMP_BENCH`;
+	if [ -d $CUR_BENCH_PATH/$BENCHMARK ]; then
+	  found_bench=1;
+	  break;
+	fi
+	
+    done
+
+
+
+    #check if benchmark directory exists only if benchmark option specified
+    temp_bench="$BENCHMARK";
+
+    if [ $found_bench -eq 0 ]; then
+      echo "$SCRIPT_NAME: Error: Benchmark, $BENCHMARK, does not exist!"
+      exit 1;
+    fi
+   fi
+
+   #check if region type has been specified
+   if [ $REGION_TYPE_SPECIFIED -eq 0 ]; then
+      echo "$SCRIPT_NAME: Warning: Defaulting to basic blocks.";
+   fi
+
+   #repeat for each region type
+   LIST_OF_REGIONS=$REGION_TYPE_SUBSTR;
+   for REGION_TYPE_SUBSTR  in $LIST_OF_REGIONS 
+   do
+      #generate elcor extension
+      ELCOR_EXT=`echo $REGION_TYPE_SUBSTR | awk -F_ '{print $1}'`;
+      ARM_TRANS_EXT=$ELCOR_EXT;
+      ELCOR_EXT="$ELCOR_EXT"_el;
+      OUT_FILE_SUFFIX=`echo $ELCOR_EXT | awk -F_ '{print $1}'`;
+      OUT_FILE="$BENCHMARK"_"$OUT_FILE_SUFFIX";	
+
+      if [ $RUN_ONLY -eq 0 ]; then
+	 TEMP_NAME=`echo $REGION_TYPE_SUBSTR | awk -F_ '{print $1}'`
+	 DIR_NAME="$BENCHMARK"_"$TEMP_NAME"		
+	 if [ ! -d $DIR_NAME ]; then
+	    mkdir $DIR_NAME 2>/dev/null
+	    if [ "$?" -ne 0 ]; then
+	       echo "$SCRIPT_NAME: Error: \"mkdir $DIR_NAME\" unsuccessful, bailing out!";
+	       exit 1;
+	    fi
+         fi
+	 cd $DIR_NAME
+      fi
+
+      #create directories in workspace to store temporary files
+      echo "$SCRIPT_NAME: Creating directories in workspace to store temporary files.";
+      if [ $CLEAN_DIRS -eq 1 ]; then
+	 if [ -d impact_intermediate ]; then
+	    rm -rf impact_intermediate 2>/dev/null;
+	 fi
+         if [ -d elcor_intermediate ]; then
+	    rm -rf elcor_intermediate 2>/dev/null;
+         fi
+	 if [ -d arm_intermediate ]; then
+	    rm -rf arm_intermediate 2>/dev/null;
+	 fi
+      fi #clean_dirs
+
+      #create directories only if they dont already exist.
+      #must check if dirs exist later !
+      if [ ! -d impact_intermediate ]; then
+         mkdir impact_intermediate 2>/dev/null;
+	 if [ "$?" -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: \"mkdir impact_intermediate\" unsuccessful, bailing out!";
+	    exit 1;
+         fi
+      fi
+      if [ ! -d elcor_intermediate ]; then
+         mkdir elcor_intermediate 2>/dev/null;
+	 if [ "$?" -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: \"mkdir elcor_intermediate\" unsuccessful, bailing out!";
+	    exit 1;
+         fi
+      fi
+      if [ ! -d arm_intermediate ]; then
+  	 mkdir arm_intermediate 2>/dev/null;
+	 if [ "$?" -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: \"mkdir arm_intermediate\" unsuccessful, bailing out!";
+	    exit 1;
+	 fi
+      fi 
+
+      if [ $RUN_IMPACT -eq 1 ]; then
+	 echo ""
+	 echo "%%%%%%%%%%"
+         cd impact_intermediate;
+
+	 export STD_PARMS_FILE=${IMPACT_REL_PATH}/parms/STD_PARMS.ARM
+
+	 IMPACT_PARMS_FILE=${STD_PARMS_FILE}
+	 if [ $IMPACT_PARMS_FILE != "" ]; then
+	    echo "$SCRIPT_NAME: Using $IMPACT_PARMS_FILE as STD_PARMS_FILE"
+	    ARGS_TO_COMPILEBENCH="$ARGS_TO_COMPILEBENCH -p $IMPACT_PARMS_FILE"
+         fi
+
+	 echo "$SCRIPT_NAME: Calling compile_bench.arm with options \
+		  $BENCHMARK -c2"$REGION_TYPE_SUBSTR" $INLINING \
+                 $ARGS_TO_COMPILEBENCH -noclean -project $IMPACT_PROJECT ."
+
+         nice -n $NICE_VALUE compile_bench.arm $BENCHMARK \
+		  -c2"$REGION_TYPE_SUBSTR" $INLINING -noclean \
+                 $ARGS_TO_COMPILEBENCH -project $IMPACT_PROJECT;
+
+         if [ "$?" -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: compile_bench.arm $ARGS_TO_COMPILEBENCH unsuccessful, bailing out!";
+	    exit 1;
+         fi
+
+         echo "%%%%%%%%%%";
+	 echo "";
+         cd ..	
+      fi #run_impact
+
+      if [ $RUN_ELCOR -eq 1 ]; then
+	 echo ""
+	 echo "%%%%%%%%%%"
+
+	 case $REGION_TYPE_SUBSTR in
+	   O_tr) 
+            echo "$SCRIPT_NAME: Processing for basic blocks ($REGION_TYPE_SUBSTR)";;
+	   S_tr) 
+            echo "$SCRIPT_NAME: Processing for super blocks ($REGION_TYPE_SUBSTR)";;
+	   HS_tr) 
+            echo "$SCRIPT_NAME: Processing for hyper blocks ($REGION_TYPE_SUBSTR)";;
+         esac
+
+         if [ ! -d impact_intermediate ]; then
+            echo "$SCRIPT_NAME: Error: Impact intermediate files must be in directory impact_intermediate!";
+	    exit 1;
+         fi
+
+         cd elcor_intermediate;
+
+         FILENAME="$BENCHMARK"."$REGION_TYPE_SUBSTR".tgz
+         ln -sf ../impact_intermediate/$FILENAME .;
+         if [ "$?" -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: \"ln -sf ../impact_intermediate/$FILENAME . \" unsuccessful, "
+            echo "bailing out!";
+            exit 1;
+         fi
+
+         gen_untar $BENCHMARK $REGION_TYPE_SUBSTR
+         if [ "$?" -ne 0 ]; then
+            echo "$SCRIPT_NAME: Error: \"gen_untar $BENCHMARK $REGION_TYPE_SUBSTR\" unsuccessful, ";
+            echo "unable to untar files, bailing out!";
+            exit 1;
+	 fi
+
+         ls *."$REGION_TYPE_SUBSTR" > elcor_input_list
+
+         nice -n $NICE_VALUE gen_elcor.pl 2 . "$ELCOR_EXT" "-Fcluster_method=none -Fdo_modulo_scheduling=no -Fdo_prepass_scalar_scheduling=no -Fdo_classic_opti=yes -Finclude_pbr_during_CSE=no -Fdo_postpass_scalar_scheduling=no -Flmdes_file_name=$ELCOR_HOME/mdes/arm/arm_elcor_std.lmdes2 -Foutput_format=rebel -Farch=arm -Fmodel=1.01 -Fcreate_stack_frame=yes -Fneed_to_save_icmove=yes $ARGS_TO_ELCOR" < elcor_input_list
+	 status=$?
+
+	 if [ $status -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: \"gen_elcor.pl\" unsuccessful, bailing out!";
+	    exit 1;
+         else
+            echo "$SCRIPT_NAME: gen_elcor.pl successful, elcor output files created.";
+         fi
+
+         gen_tar $BENCHMARK $ELCOR_EXT;
+         #leaving files in place for IR viewer
+         rm -f *"$ELCOR_EXT";
+         rm -f *"$REGION_TYPE_SUBSTR";
+
+         echo "%%%%%%%%%%";
+	 echo "";
+         cd ..
+      fi #run_elcor
+
+      ######################################################################
+      # run arm translator
+      ######################################################################
+
+      if [ $RUN_ARM_TRANS -eq 1 ]; then
+	echo ""
+	echo "%%%%%%%%%%"
+
+	cd arm_intermediate;
+	rm -f *."$ELCOR_EXT"
+
+	ln -sf ../elcor_intermediate/"$BENCHMARK"."$ELCOR_EXT".tgz .;
+	if [ $? -ne 0 ]; then
+	    echo "$SCRIPT_NAME: \"ln -sf ../elcor_intermediate/$BENCHMARK.$ELCOR_EXT.tgz .\" failed!";
+	    exit 1;
+	fi
+
+	gen_untar $BENCHMARK $ELCOR_EXT
+	if [ "$?" -ne 0 ]; then
+	    echo "$SCRIPT_NAME: Error: \"gen_untar $BENCHMARK $ELCOR_EXT\" unsuccessful, ";
+	    echo "unable to untar files, bailing out!";
+	    exit 1;
+	fi
+	
+	# the arm-translator has a hardcoded file name that it looks for
+	# the data in.
+	if [ ! -e "__impact_data.O_el" ]; then
+	    mv __impact_data.$ELCOR_EXT __impact_data.O_el
+	fi
+    
+	ls *."$ELCOR_EXT" > arm_input_list;
+	for el_file in `cat arm_input_list`
+	do
+	    echo "> Arm translating $el_file";
+	    nice -n $NICE_VALUE arm-trans "$el_file" -o "$el_file"."s";
+	    if [ $? -ne 0 ]; then
+		echo "$SCRIPT_NAME: trouble translating $el_file!";
+		exit 1;
+	    fi
+	done
+	echo "> Successful";
+	echo ">";
+
+	echo "> Compiling $BENCHMARK";
+
+	PRELINKING_OPTS=`read_compile_info $BENCHMARK -linking_preoptions`;
+	POSTLINKING_OPTS=`read_compile_info $BENCHMARK -linking_postoptions`;
+	
+	echo "nice -n $NICE_VALUE arm-linux-gcc $PRELINKING_OPTS *.s -static -o $OUT_FILE $POSTLINKING_OPTS";
+	nice -n $NICE_VALUE arm-linux-gcc $PRELINKING_OPTS *.s -static -o $OUT_FILE $POSTLINKING_OPTS
+	if [ $? -ne 0 ]; then
+	    echo "$SCRIPT_NAME: couldn't compile the *.s files!";
+	    exit 1;
+	fi
+	echo "> money"
+	echo ">";
+	echo "%%%%%%%%%%"
+	echo "";
+	cd ..;
+      fi  # RUN_ARM_TRANS
+
+
+##################################################################################
+#
+#	  BENCHMARK run
+#
+##################################################################################
+
+     if [ $RUN_ARM_TRANS_BIN -eq 1 ]; then
+        NUMEVAL=`read_exec_info $BENCHMARK -numeval`
+        myi=1
+        EVAL_LIST=`read_exec_info $BENCHMARK -eval_list`
+        while [ $myi -le $NUMEVAL ]
+        do
+          whichinput=`echo $EVAL_LIST | awk -v x=$myi '{print $x}'`
+          echo "%%%%%%%%%% Evaluating $whichinput %%%%%%%%%%"
+	  echo ""
+	  echo "%%%%%%%%%%"
+
+	  cd arm_intermediate
+
+	  echo "$SCRIPT_NAME: Checking for any setup necessary to run $BENCHMARK"
+
+######### SETUP
+          echo " "
+          echo "> Setting up execution"
+	  SETUP="`read_exec_info $BENCHMARK -input $whichinput -setup`";
+	  if [ $? -ne 0 ]; then
+	     echo "$SCRIPT_NAME: Determining setup command error!"
+	  fi
+
+	  if [ "$SETUP" != "" ]; then
+            echo "> ${SETUP}"
+            /bin/sh -c "${SETUP}"
+          else
+            echo "> Skipping setup, no SETUP command(s) specified";
+          fi
+
+######### RUN
+	  echo " "
+	  echo "> $SCRIPT_NAME: running $OUT_FILE"
+
+	  CPREFIX=`read_exec_info ${BENCHMARK} -input ${whichinput} -prefix`;
+          if test "$?" != 0; then
+             echo "Unexpected Exit (PREFIX)!: non-zero exit code";
+             echo "$PREFIX";
+             exit 1;
+          fi
+	  ARGS=`read_exec_info ${BENCHMARK} -input ${whichinput} -args`;
+          if test "$?" != 0; then
+             echo "Unexpected Exit (ARGS)!: non-zero exit code";
+             echo "$ARGS";
+             exit 1;
+          fi
+
+	  COMMAND="($SIMULATOR $SIMULATOR_ARGS -ignore_notes true ./${OUT_FILE} $ARGS) > result.out.${whichinput} 2> result.err.${whichinput}"
+	  if [ $? -ne 0 ]; then
+	     echo "$SCRIPT_NAME: Determining execution command error!"
+	  fi
+
+	  echo "> ${COMMAND}"
+          /bin/sh -c "${COMMAND}"
+
+######### CHECK
+	  echo " "
+	  echo "> $SCRIPT_NAME: checking results"
+	  CHECK="`read_exec_info ${BENCHMARK} -input ${whichinput} -check result.out.${whichinput} result.err.${whichinput}`"
+	  if [ $? -ne 0 ]; then
+	     echo "$SCRIPT_NAME: Determining check command error!"
+	  fi
+
+          if [ "$CHECK" != "" ]; then
+            echo "> ${CHECK}"
+            /bin/sh -c "${CHECK}"
+	    if [ $? -ne 0 ]; then
+	       echo "> $SCRIPT_NAME: Result Check ***FAILED*** for Benchmark $BENCHMARK on input $whichinput, region type $ARM_TRANS_EXT!"
+	    else
+	       echo "> $SCRIPT_NAME: Result Check *SUCCESSFUL* for Benchmark $BENCHMARK on input $whichinput, region type $ARM_TRANS_EXT"
+	    fi
+          else
+            echo "> WARNING: no check specified for $BENCHMARK."
+          fi
+
+######### CLEANUP
+	  echo " "
+	  echo "> $SCRIPT_NAME: cleaning up stuff"
+	  CLEANUP="`read_exec_info ${BENCHMARK} -input ${whichinput} -cleanup`"
+	  if [ $? -ne 0 ]; then
+	     echo "$SCRIPT_NAME: Determining cleanup command error!"
+	  fi
+
+          if [ "$CLEANUP" != "" ]; then
+             echo ">   $CLEANUP"
+             /bin/sh -c "$CLEANUP";
+          else
+             echo "> Skipping rest of cleanup, no CLEANUP command(s) specified";
+          fi
+
+######### POSTPROCESSING
+	  mv DYN_STATS DYN_STATS."$OUT_FILE_SUFFIX"."$whichinput" 2>/dev/null;
+
+	  echo "%%%%%%%%%%"
+	  echo ""
+          echo "%%%%%%%%%% Done evaluating $whichinput %%%%%%%%%%"
+          cd ..
+          myi=`expr $myi + 1`
+        done
+     fi #run_arm_trans_bin
+
+     if [ $RUN_ONLY -eq 0 ]; then
+	cd ..
+     fi
+   done
+fi #for valid_args
+
+echo "$SCRIPT_NAME : Finished!"

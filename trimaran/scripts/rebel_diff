@@ -1,0 +1,25 @@
+#!/bin/bash
+#
+# rebel_diff
+#
+# Diff two rebel files, ignoring pointers.
+#
+# All it does is strip out the pointers (e.g. ^123) and then do a diff.
+
+if [ $# -ne 2 ]; then
+  echo "Usage: `basename $0` <file1> <file2>"
+  exit 1
+fi
+
+FILE1=$1
+FILE2=$2
+
+FILE1TMP=`mktemp`
+sed -e 's/\^[0-9][0-9]*//g' $FILE1 > $FILE1TMP
+
+FILE2TMP=`mktemp`
+sed -e 's/\^[0-9][0-9]*//g' $FILE2 > $FILE2TMP
+
+diff $FILE1TMP $FILE2TMP
+
+rm -f $FILE1TMP $FILE2TMP

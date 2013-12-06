@@ -1,0 +1,25 @@
+#
+#	Elcor cluster default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Cluster declaration
+	
+	# valid values:
+	# none      : no clustering
+	# bug	    : BUG
+	# ml        : multi-level graph-partitioning clustering
+	cluster_method = bug;
+        bug_model_move_resources = yes;
+
+	# rhop edge weight assignment method
+	# critical : critical paths = high, others = low
+	# fcfs     : first come first serve slack distribution
+	# fcfs2    : first come first serve depending on amount of slack
+	rhop_edge_weights = fcfs2;
+
+	# max number of intercluster move optimization passes. 0 = disable
+	move_opti_passes = 1;
+end)

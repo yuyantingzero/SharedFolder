@@ -1,0 +1,25 @@
+#
+#	Architecture default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Architecture declaration
+
+    # The following two parameters identify the architecture and
+    # version supported by elcor. These are changed very rarely.
+    arch = HPL-PD;
+    model = v1.0;
+
+    # Compiler assumed speculation model
+    # GENERAL_SPECULATION = 0; (all ops but stores/brs can be speculated)
+    # RESTRICTED_SPECULATION = 1 (only provable non-excepting ops may be 
+    # speculated)
+    speculation_model = 0;
+
+    # For scheduling, ignore the Mdes resource model and assume infinite
+    # resources are available. Can be used to compute critical path
+    # lengths and upper bounds on performance.
+    assume_infinite_resources = no;
+end)

@@ -1,0 +1,1286 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           arm_pristine.hmdes2
+//      Authors:        Nate Clark
+//      Created:        October 2003
+//      Description:    ARM Architecture Description
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// Written by Nate Clark 10/27/03
+// Based on Rajiv Ravindran's WIMS mdes
+// Based on Shail Aditya 01/16/96
+// Based on John C. Gyllenhaal's example of PA_7100_pristine.hmdes2
+// Based on Rick Hank's PLAYDOH.hmdes1
+
+// Modified by Shail Aditya 3/3/98 
+// Updated to conform to exact HPL-PD opcodes and IO Formats
+// Based on Vinod Kathail's HPL-PD ISA specification
+
+$include "arm_ops.hmdes2"
+
+// **************************************************************
+// Registers and Register Files
+
+$def byte_size 	8
+$def hw_size   	16
+$def word_size 	32
+$def sgl_size  	32
+$def dbl_size  	64
+
+$def speculation 0
+
+SECTION Register_Class
+{
+  CALLER();
+  CALLEE();
+  READ_ONLY();
+  PSEUDO();
+  ALIAS();
+}
+
+SECTION Stack_Descr
+{
+  STACK_DESCR(
+    Dir("HIGH_TO_LOW")          // HIGH_TO_LOW or LOW_TO_HIGH
+    RetAddrThruStack("true")    // true or false
+    RetAddrSize(4)
+    Alignment(4)
+  );
+}
+
+SECTION Macro_Class {
+  READ_ONLY();
+  PSEUDO();
+  ALIAS();
+  MULTI_ALIAS();
+  COHERENT();
+}
+
+SECTION Macro
+{
+  LOCAL(class(PSEUDO));
+  PARAM(class(PSEUDO));
+  INT_PARAM_1();
+  INT_PARAM_2();
+  INT_PARAM_3();
+  INT_PARAM_4();
+  INT_RETURN(alias(INT_PARAM_1) class(ALIAS)); // Value returned by functions
+  INT_RETURN_TYPE(class(PSEUDO));
+  INT_TM_TYPE(class(PSEUDO));
+
+  FLT_PARAM_1();
+  FLT_PARAM_2();
+  FLT_PARAM_3();
+  FLT_PARAM_4();
+  FLT_RETURN(alias(FLT_PARAM_1) class(ALIAS));
+  FLT_RETURN_TYPE(class(PSEUDO));
+  FLT_TM_TYPE(class(PSEUDO));
+  FLT_ZERO(class(READ_ONLY));
+  FLT_ONE(class(READ_ONLY));
+  DBL_ZERO(class(READ_ONLY));
+  DBL_ONE(class(READ_ONLY));
+  DBL_PARAM_1();
+  DBL_PARAM_2();
+  DBL_PARAM_3();
+  DBL_PARAM_4();
+  DBL_RETURN(alias(DBL_PARAM_1) class(ALIAS));
+  DBL_RETURN_TYPE(class(PSEUDO));
+  DBL_TM_TYPE(class(PSEUDO));
+  ICMOVE_REG();
+  SP_REG();                     // Stack pointer
+  OP_REG(alias(SP_REG) class(ALIAS));
+  IP_REG(alias(SP_REG) class(ALIAS));
+  LV_REG(alias(SP_REG) class(ALIAS));
+  RGS_REG(alias(SP_REG) class(ALIAS));
+
+  SWAP(class(PSEUDO));
+  RETURN_ADDR();                // Link Register
+  RESERVE(class(PSEUDO READ_ONLY));
+}
+
+
+
+SECTION Register
+{
+  // JB: Just for clarity's sake and so I don't need to keep looking
+  // back at the document, the ARM Procedure Call Standard for the ARM
+  // Architecture (AAPCS Oct 2003) makes the following claims about
+  // the available set of registers:
+
+  // number  synonym   role
+  // r15     PC        The Program Counter
+  // r14     LR        The Link Register
+  // r13     SP        The Stack Pointer
+  // r12     IP        The Intra-Procedure-call scratch register
+  // r11     v8        Variable-register 8/Frame Pointer
+  // r10     v7        Variable-register 7
+  // r9      v6,SB,TR  Platform register, defined by the platform standard
+  // r8      v5        Variable-register 5
+  // r7      v4        Variable register 4
+  // r6      v3        Variable register 3
+  // r5      v2        Variable register 2
+  // r4      v1        Variable register 1
+  // r3      a4        Argument / scratch register 4
+  // r2      a3        Argument / scratch register 3
+  // r1      a2        Argument / result / scratch register 2
+  // r0      a1        Argument / result / scratch register 1
+
+  // Note: Register r12 (IP) may be used by a linker as a scratch
+  // register between a routine and any subroutine it calls. It can
+  // also be used within a routine to hold intermediate values between
+  // subroutine calls. (!?)
+
+  // r4-r8, r10 and r11 (v1-v5, v7 and v8) are used to hold the values
+  // of a routine's local variables.
+
+  // A subroutine must preserve the contents of the registers r4-r8,
+  // r10, r11 and SP
+
+  // Procedure Call Result Return 
+  // * Basic types (int, float) that are <= 4 bytes
+  // are zero- or sign-extended to a word and returned in r0.  
+  // * Double-word sized types (long long, double) are returned in r0
+  // and r1 where r0 contains the low address half of the
+  // representation of the value in memory (most significant half in
+  // big endian)
+  // * A Composite Type not larger than 4 bytes is returned in r0.
+  // Any bits in r0 that lie outside the bounds of the result have
+  // unspecified values 
+  // * A Composite Type larger than 4 bytes, or whose size cannot be
+  // determined statically by both caller and callee, is stored in
+  // memory at an address passed as an extra argument when the
+  // function was called
+
+  // Argument registers are all caller save
+  $for (N in $0..3) { "GPR_${N}"(class(CALLER)); }
+
+  // Variable registers are all callee save
+  $for (N in $4..11) { "GPR_${N}"(class(CALLEE)); }
+
+  // Reserve r12/IP since we don't know what to do with it and gcc
+  // seems to make some assumptions....
+  // NOTE.JB: If you unreserve this register, you should probally add code to
+  // process_rebel.cpp in the arm translator to make sure that r12 is not
+  // being used as a store target, see "FIXME.JB: HACK" in the function 
+  // handle_mem_op
+  "GPR_12"(macro(RESERVE));
+
+  // The stack pointer (SP) is callee save
+  "GPR_13"(macro(SP_REG)  class(CALLEE));
+
+  // The link register (LR) is callee save. Need to reserve it for the
+  // time being because the register allocator doesn't create live ranges
+  // for the implicit def of the LR at BRLs. Without this live range, 
+  // things don't interfere when they should, and then function calls end
+  // up corrupting data.
+  "GPR_14"(class(CALLEE) macro(RESERVE));
+
+  // GPR 14 is the link register, so it should get the RETURN_ADDR
+  // macro tag, but in elcor only BTRs can get addresses, so assign 
+  // the macro to another register and add some fixup to codegen.
+  "BTR_0"(class(CALLEE) macro(RETURN_ADDR));
+
+  // r0-3 are the parameter passing registers a1-a4 and are all caller-save
+  "GPR_0"(macro(INT_PARAM_1 INT_RETURN));
+  "GPR_1"(macro(INT_PARAM_2));
+  "GPR_2"(macro(INT_PARAM_3));
+  "GPR_3"(macro(INT_PARAM_4));
+  "GPR_11"(macro(ICMOVE_REG));
+
+  $for (N in $0..3) { "FPR_${N}"(class(CALLER)); }
+  $for (N in $4..7) { "FPR_${N}"(class(CALLEE)); }
+
+  "FPR_0"(macro(FLT_PARAM_1));
+  "FPR_1"(macro(FLT_PARAM_2));
+  "FPR_2"(macro(FLT_PARAM_3));
+  "FPR_3"(macro(FLT_PARAM_4));
+
+  // these registers don't really exist in the architecture. they're
+  // replaced during code generation, but need to be in the MDES for
+  // various reasons.
+  "FPR_8"(macro(FLT_ZERO));
+  "FPR_9"(macro(FLT_ONE));
+  "FPR_10"(macro(DBL_ZERO));
+  "FPR_11"(macro(DBL_ONE));
+  "FPR_12"(macro(DBL_PARAM_1));
+  "FPR_13"(macro(DBL_PARAM_2));
+  "FPR_14"(macro(DBL_PARAM_3));
+  "FPR_15"(macro(DBL_PARAM_4));
+
+  $for (N in $0..(pr_static_size-1)) { "PR_${N}"(class(CALLER)); }
+  $for (N in $1..(btr_static_size-1)) { "BTR_${N}"(class(CALLEE)); }
+}
+
+SECTION Constant_Range
+{
+  // ARM allows any literal value specified by an 8 bit number rotated
+  // 0, 2, 4, ..., 30 different places in most data processing instructions.
+  // Unfortunately, mdes doesn't let me specify the ranges in hex :(
+
+  // 0x0 - 0xFF
+  rot_0_range(min(0) max(255) step(1));
+  // 0x4 - 0x3FC
+  rot_2_range(min($={(1 << 2)})   max($={(255 << 2)}) step($={(1 << 2)}));
+  // 0x10 - 0xFF0
+  rot_4_range(min($={(1 << 4)})   max($={(255 << 4)}) step($={(1 << 4)}));
+  // 0x40 - 0x3FC0
+  rot_6_range(min($={(1 << 6)})   max($={(255 << 6)}) step($={(1 << 6)}));
+  // 0x100 - 0xFF00
+  rot_8_range(min($={(1 << 8)})   max($={(255 << 8)}) step($={(1 << 8)}));
+  // 0x400 - 0x3FC00
+  rot_10_range(min($={(1 << 10)}) max($={(255 << 10)}) step($={(1 << 10)}));
+  // 0x1000 - 0xFF000
+  rot_12_range(min($={(1 << 12)}) max($={(255 << 12)}) step($={(1 << 12)}));
+  // 0x4000 - 0x3FC000
+  rot_14_range(min($={(1 << 14)}) max($={(255 << 14)}) step($={(1 << 14)}));
+  // 0x10000 - 0xFF0000
+  rot_16_range(min($={(1 << 16)}) max($={(255 << 16)}) step($={(1 << 16)}));
+  // 0x40000 - 0x3FC0000
+  rot_18_range(min($={(1 << 18)}) max($={(255 << 18)}) step($={(1 << 18)}));
+  // 0x100000 - 0xFF00000
+  rot_20_range(min($={(1 << 20)}) max($={(255 << 20)}) step($={(1 << 20)}));
+  // 0x400000 - 0x3FC00000
+  rot_22_range(min($={(1 << 22)}) max($={(255 << 22)}) step($={(1 << 22)}));
+
+  // Need to be careful because some literals are negative now that we're
+  // wrapping the rotate.
+  // 0x01000000 - 0x7F000000
+  pos_rot_24_range(min($={(1 << 24)}) max($={(127 << 24)}) step($={(1 << 24)}));
+  // 0x80000000 - 0xFF000000
+  neg_rot_24_range(min(-2147483648) max(-16777216) step($={(1 << 24)}));
+
+  // FIX: this gets really painful when the rotate starts wrapping around. 
+  // Implement this if you're bored or have some spare time.
+  // Total: 0x4000000 - 0xFC000003
+  // pos_rot_26_range1(min($={(1 << 26)}) max($={(31 << 26)}) step($={(1 << 26)}));
+
+  // 0x10000000 - 0xF000000F
+  // pos_rot_28_range(min($={(1 << 28)}) max($={(255 << 2)}) step($={(1 << 28)}));
+  // 0x10000000 - 0xF000000F
+  // neg_rot_28_range(min($={(1 << 28)}) max($={(255 << 2)}) step($={(1 << 28)}));
+
+  // 0x40000000 - 0xC000003F
+  // pos_rot_30_range(min($={(1 << 30)}) max($={(255 << 2)}) step($={(1 << 30)}));
+  // 0x40000000 - 0xC000003F
+  // neg_rot_30_range(min($={(1 << 30)}) max($={(255 << 2)}) step($={(1 << 30)}));
+
+
+  // This is not a mistake! The eight and twelve bit ranges in ARM's memory
+  // instructions are augmented with a +/- bit. Why they don't just use two's
+  // complement is a mystery to me.
+  eight_bit_range   (min(-255)  max(255)  step(1));
+  twelve_bit_range  (min(-4095)  max(4095) step(1));
+  unrestricted_range(min($={0-(1 << 32)})  max($={(1 << 32) - 1})  step(1));
+}
+
+SECTION Constant_Set
+{
+  unrest_set(ranges(unrestricted_range));
+
+  data_proc_set(ranges($for (N in 0 2 4 6 8 10 12 14 16 18 20 22) { rot_${N}_range } pos_rot_24_range neg_rot_24_range));
+  big_mem_offset_set(ranges(twelve_bit_range));
+  small_mem_offset_set(ranges(eight_bit_range));
+}
+
+SECTION Register_File
+{
+  GPR(static($for (N in $0..(gpr_static_size-1)) { "GPR_${N}" })
+      width(${word_size}) speculative(${speculation}) virtual(I));
+
+  FPR(static($for (N in $0..(fpr_static_size-1)) { "FPR_${N}" })
+      width(${dbl_size}) speculative(${speculation}) virtual(F));
+
+  PR(static($for (N in $0..(pr_static_size-1)) { "PR_${N}" })
+     width(1) speculative(${speculation}) virtual(P));
+
+  BTR(static($for (N in $0..(btr_static_size-1)) { "BTR_${N}" })
+      rotating() width(${dbl_size}) speculative(0) virtual(B));
+
+  U(width(0) speculative(0) virtual(U));
+
+  // there are going to be three literal files used in the ARM ISA
+  // 8-bit literals are used in arithmetic/cmp operations, 12-bit
+  // literals are used as offsets for ld/st operations, and 32-bit
+  // literals are used for labels
+
+  // 8 bit literals for data processing instructions (add, cmp, etc)
+  L8DP(width(8) virtual(L) consts(data_proc_set));
+
+  // 8 bit literals for certain memory operations
+  L8M(width(8) virtual(L) consts(small_mem_offset_set));
+
+  // 12 bit literals for other memory operations
+  L12(width(12) virtual(L) consts(big_mem_offset_set));
+
+  // Catch all so that codegen can create a move for anything.
+  L32(width(32) virtual(L) consts(unrest_set));
+
+}
+
+// **************************************************************
+// Operation Formats (IO Descriptors)
+
+SECTION Field_Type
+{
+  FT_i(regfile(GPR));
+  FT_f(regfile(FPR));
+  FT_p(regfile(PR));
+
+  // hack: get rid of FT_c
+  FT_c(regfile(GPR));
+  FT_b(regfile(BTR));
+  FT_l8dp(regfile(L8DP));
+  FT_l8m(regfile(L8M));
+  FT_l12(regfile(L12));
+  FT_l32(regfile(L32));
+  FT_u(regfile(U));
+
+  FT_i_cb(compatible_with(FT_i FT_b FT_c));
+  FT_ic(compatible_with(FT_i FT_c));
+  FT_il8dp(compatible_with(FT_i FT_l8dp));
+  FT_il8m(compatible_with(FT_i FT_l8m));
+  FT_il12(compatible_with(FT_i FT_l12));
+
+  FT_icb(compatible_with(FT_i FT_c FT_b));
+
+  FT_icl8dp(compatible_with(FT_i FT_c FT_l8dp));
+  FT_icl8m(compatible_with(FT_i FT_c FT_l8m));
+
+  FT_il8dpb(compatible_with(FT_i FT_l8dp FT_b));
+  FT_il32b(compatible_with(FT_i FT_l32 FT_b));
+  FT_iclallb(compatible_with(FT_i FT_c FT_l8dp FT_l8m FT_l12 FT_b FT_l32));
+  FT_icl8dpb(compatible_with(FT_i FT_c FT_l8dp FT_b));
+
+  FT_ifc(compatible_with(FT_i FT_f FT_c));
+
+  FT_icfbpu(compatible_with(FT_i FT_f FT_c FT_b FT_p FT_u));
+  FT_icfbpl8dpu(compatible_with(FT_i FT_f FT_c FT_b FT_p FT_u FT_l8dp));
+}
+
+SECTION Operation_Format
+{
+  OF_intarith1(pred(FT_p) src(FT_icl8dp) dest(FT_ic));
+  OF_intarith2(pred(FT_p) src(FT_ic FT_icl8dp) dest(FT_ic));
+  OF_intarith2_no_lit(pred(FT_p) src(FT_ic FT_ic) dest(FT_ic));
+  OF_intcmpr(pred(FT_p) src(FT_ic FT_il8dp) dest(FT_i));
+  OF_intcmpp(pred(FT_p) src(FT_ic FT_il8dp) dest(FT_p FT_p));
+
+  OF_floatarith1(pred(FT_p) src(FT_f) dest(FT_f));
+  OF_floatarith2(pred(FT_p) src(FT_f FT_f) dest(FT_f));
+  OF_floatarith3(pred(FT_p) src(FT_f FT_f FT_f) dest(FT_f));
+  OF_floatcmpr(pred(FT_p) src(FT_f FT_f) dest(FT_i));
+  OF_floatcmpp(pred(FT_p) src(FT_f FT_f) dest(FT_p FT_p));
+
+//  OF_intload_std(pred(FT_p) src(FT_il12) dest(FT_icb));
+  OF_intload_std(pred(FT_p) src(FT_ic) dest(FT_icb));
+  OF_intloadgdisp(pred(FT_p) src(FT_i FT_il12) dest(FT_icb));
+
+  OF_intloadgdisp_H(pred(FT_p) src(FT_i FT_il8m) dest(FT_icb));
+
+  OF_floatloadgdisp(pred(FT_p) src(FT_i FT_l8m) dest(FT_f));
+  OF_floatloadgdisp_H(pred(FT_p) src(FT_i FT_l8m) dest(FT_f));
+
+  OF_floatload_std(pred(FT_p) src(FT_il8m) dest(FT_f));
+  OF_floatloadinc(pred(FT_p) src(FT_i FT_icl8m) dest(FT_f FT_i));
+
+  OF_intloadinc(pred(FT_p) src(FT_i FT_icl8m) dest(FT_icb FT_i));
+
+  OF_intloadext_std(pred(FT_p) src(FT_i) dest(FT_icb));
+  OF_intloadgdispext_std(pred(FT_p) src(FT_i FT_il8m) dest(FT_icb));
+
+  OF_intstore_std(pred(FT_p) src(FT_i FT_icb) dest());  
+  OF_intstoregdisp(pred(FT_p) src(FT_i FT_il12 FT_icb) dest());
+  OF_intstore_std_H(pred(FT_p) src(FT_i FT_icb) dest());  
+  OF_intstoregdisp_H(pred(FT_p) src(FT_i FT_il8m FT_icb) dest());
+
+  OF_floatstoregdisp(pred(FT_p) src(FT_i FT_l8m FT_f) dest());
+  OF_floatstore_std(pred(FT_p) src(FT_i FT_f) dest());  
+  OF_floatstoreinc(pred(FT_p) src(FT_i FT_f FT_icl8m) dest(FT_i));
+
+  OF_intstoreinc(pred(FT_p) src(FT_i FT_icl8m FT_icl8m) dest(FT_i));
+
+  OF_predload(pred(FT_p) src(FT_i) dest(FT_p));
+  OF_predstore(pred(FT_p) src(FT_i FT_p) dest());  
+
+  // Explicit save/restore formats - Shail Aditya 05/26/98
+  OF_intsave(pred(FT_p) src(FT_i FT_ic) dest());
+  OF_intrestore(pred(FT_p) src(FT_i) dest(FT_ic));
+  OF_floatsave(pred(FT_p) src(FT_i FT_f) dest());
+  OF_floatrestore(pred(FT_p) src(FT_i) dest(FT_f));
+  OF_brsave(pred(FT_p) src(FT_i FT_b) dest());
+  OF_brrestore(pred(FT_p) src(FT_i) dest(FT_b));
+  
+  OF_intsaveg(pred(FT_p) src(FT_i FT_il12 FT_ic) dest());
+  OF_intrestoreg(pred(FT_p) src(FT_i FT_il12) dest(FT_ic));
+  OF_floatsaveg(pred(FT_p) src(FT_i FT_il8m FT_f) dest());
+  OF_floatrestoreg(pred(FT_p) src(FT_i FT_il8m) dest(FT_f));
+  OF_brsaveg(pred(FT_p) src(FT_i FT_il12 FT_b) dest());
+  OF_brrestoreg(pred(FT_p) src(FT_i FT_il12) dest(FT_b));
+
+  // TBD: B as src and dest for BTR moves
+  OF_moveii(pred(FT_p) src(FT_iclallb) dest(FT_icb));
+
+  OF_sext(pred(FT_p) src(FT_i) dest(FT_i));
+  OF_moveif(pred(FT_p) src(FT_i) dest(FT_f));
+  OF_moveff(pred(FT_p) src(FT_f) dest(FT_f));
+  OF_movefi(pred(FT_p) src(FT_f) dest(FT_i));
+  OF_moveip(pred(FT_p) src(FT_i) dest(FT_p));
+  OF_movepp(pred(FT_p) src(FT_p) dest(FT_p));
+  OF_movepi(pred(FT_p) src(FT_p) dest(FT_i));
+  OF_pred(pred() src() dest(FT_p));
+
+  // Move/extract bits to/from pred -- Shail Aditya 05/26/98
+  OF_movegbp(pred(FT_p) src(FT_i FT_il8m) dest(FT_p));
+  OF_movegcm(pred(FT_p) src(FT_il8m FT_il8m FT_c) dest(FT_c));
+
+  // HPL-PD 2.0 extn
+  // For literal moves
+  OF_intlitmove(pred(FT_p) src(FT_l8dp) dest(FT_i));
+  OF_floatlitmove(pred(FT_p) src(FT_l8dp) dest(FT_f));
+  // For new split moves instead of move
+
+  OF_movegg(pred(FT_p) src(FT_i) dest(FT_i));
+
+  OF_movegc(pred(FT_p) src(FT_i) dest(FT_c));
+  OF_movecg(pred(FT_p) src(FT_c) dest(FT_i));
+  OF_movebb(pred(FT_p) src(FT_b) dest(FT_b));
+
+  // For literal moves and pbrs
+  OF_btrlitmove(pred(FT_p) src(FT_l8dp) dest(FT_b));
+  OF_pbrlit(pred(FT_p) src(FT_l8dp FT_l8dp) dest(FT_b));
+
+  // TBD: added B on first src operand for PBR operations -- SAG 10/28/97
+  OF_branch(pred(FT_p) src(FT_il32b FT_l8dp) dest(FT_b));
+
+  OF_brucond(pred(FT_p) src(FT_b) dest());
+  OF_brcond(pred(FT_p) src(FT_b FT_p) dest());
+  OF_brlink(pred(FT_p) src(FT_b) dest(FT_b));
+  OF_brtop(pred() src(FT_b FT_c FT_c) dest(FT_p FT_c FT_c));
+  OF_brlc(pred(FT_p) src(FT_b FT_c) dest(FT_c));
+
+  OF_brdvi(pred(FT_p) src(FT_b FT_i) dest());
+  OF_brdvf(pred(FT_p) src(FT_b FT_f) dest());
+}
+
+// **************************************************************
+//  Latency Classes
+
+SECTION Operand_Latency
+{
+  // latency times
+  time_null(time(0));
+
+  time_int_alu_sample(time(int_alu_sample));
+  time_int_alu_exception(time(int_alu_exception));
+  time_int_alu_latency(time(int_alu_latency));
+  time_int_alu_reserve(time(int_alu_reserve));
+
+  time_int_cmpp_sample(time(int_cmpp_sample));
+  time_int_cmpp_exception(time(int_cmpp_exception));
+  time_int_cmpp_latency(time(int_cmpp_latency));
+  time_int_cmpp_reserve(time(int_cmpp_reserve));
+
+  time_int_multiply_sample(time(int_multiply_sample));
+  time_int_multiply_exception(time(int_multiply_exception));
+  time_int_multiply_latency(time(int_multiply_latency));
+  time_int_multiply_reserve(time(int_multiply_reserve));
+
+  time_int_divide_sample(time(int_divide_sample));
+  time_int_divide_exception(time(int_divide_exception));
+  time_int_divide_latency(time(int_divide_latency));
+  time_int_divide_reserve(time(int_divide_reserve));
+
+  time_float_alu_sample(time(float_alu_sample));
+  time_float_alu_exception(time(float_alu_exception));
+  time_float_alu_latency(time(float_alu_latency));
+  time_float_alu_reserve(time(float_alu_reserve));
+
+  time_float_cmpp_sample(time(float_cmpp_sample));
+  time_float_cmpp_exception(time(float_cmpp_exception));
+  time_float_cmpp_latency(time(float_cmpp_latency));
+  time_float_cmpp_reserve(time(float_cmpp_reserve));
+
+  time_float_multiply_sample(time(float_multiply_sample));
+  time_float_multiply_exception(time(float_multiply_exception));
+  time_float_multiply_latency(time(float_multiply_latency));
+  time_float_multiply_reserve(time(float_multiply_reserve));
+
+  time_float_divide_sample(time(float_divide_sample));
+  time_float_divide_exception(time(float_divide_exception));
+  time_float_divide_latency(time(float_divide_latency));
+  time_float_divide_reserve(time(float_divide_reserve));
+
+  time_post_increment_add(time(post_increment_add));
+
+  time_load_level1_sample(time(load_level1_sample));
+  time_load_level1_exception(time(load_level1_exception));
+  time_load_level1_latency(time(load_level1_latency));
+  time_load_level1_reserve(time(load_level1_reserve));
+
+  time_store_sample(time(store_sample));
+  time_store_exception(time(store_exception));
+  time_store_latency(time(store_latency));
+  time_store_reserve(time(store_reserve));
+
+  time_branch_sample(time(branch_sample));
+  time_branch_exception(time(branch_exception));
+  time_branch_latency(time(branch_latency));
+  time_branch_reserve(time(branch_reserve));
+
+}
+
+SECTION Operation_Latency
+{
+  OL_null(exc(time_null) 
+	  rsv(time_null
+	       time_null
+	       time_null
+	       time_null
+	       time_null) 
+ 	 pred(time_null) 
+	 src(time_null 
+	     time_null 
+	     time_null 
+	     time_null 
+	     time_null) 
+	 sync_src(time_null
+                  time_null) 
+	 dest(time_null
+              time_null
+              time_null
+              time_null) 
+	 sync_dest(time_null
+		   time_null));
+
+  OL_int(exc(time_int_alu_exception) 
+	 rsv(time_int_alu_reserve
+	      time_int_alu_reserve
+	      time_int_alu_reserve
+	      time_int_alu_reserve
+	      time_int_alu_reserve) 
+ 	 pred(time_int_alu_sample) 
+	 src(time_int_alu_sample 
+	     time_int_alu_sample 
+	     time_int_alu_sample 
+	     time_int_alu_sample 
+	     time_int_alu_sample) 
+	 sync_src(time_int_alu_sample
+                  time_int_alu_sample) 
+	 dest(time_int_alu_latency
+              time_int_alu_latency
+              time_int_alu_latency
+              time_int_alu_latency) 
+	 sync_dest(time_int_alu_sample
+		   time_int_alu_sample));
+
+  OL_float(exc(time_float_alu_exception) 
+	   rsv(time_float_alu_reserve
+		time_float_alu_reserve
+		time_float_alu_reserve
+		time_float_alu_reserve
+		time_float_alu_reserve) 
+ 	 pred(time_float_alu_sample) 
+	 src(time_float_alu_sample 
+	     time_float_alu_sample 
+	     time_float_alu_sample 
+	     time_float_alu_sample 
+	     time_float_alu_sample) 
+	 sync_src(time_float_alu_sample
+                  time_float_alu_sample) 
+	 dest(time_float_alu_latency
+              time_float_alu_latency
+              time_float_alu_latency
+              time_float_alu_latency) 
+	 sync_dest(time_float_alu_sample
+		   time_float_alu_sample));
+
+  OL_load1(exc(time_load_level1_exception) 
+	   rsv(time_load_level1_reserve
+		time_load_level1_reserve
+		time_load_level1_reserve
+		time_load_level1_reserve
+		time_load_level1_reserve)
+ 	 pred(time_load_level1_sample) 
+	 src(time_load_level1_sample 
+	     time_load_level1_sample 
+	     time_load_level1_sample 
+	     time_load_level1_sample 
+	     time_load_level1_sample) 
+	 sync_src(time_load_level1_sample
+                  time_load_level1_sample) 
+	 dest(time_load_level1_latency
+              time_post_increment_add
+              time_load_level1_latency
+              time_load_level1_latency) 
+	 sync_dest(time_load_level1_sample
+		   time_load_level1_sample));
+
+  OL_store(exc(time_store_exception) 
+	   rsv(time_store_reserve
+		time_store_reserve
+		time_store_reserve
+		time_store_reserve
+		time_store_reserve) 
+ 	 pred(time_store_sample) 
+	 src(time_store_sample 
+	     time_store_sample 
+	     time_store_sample 
+	     time_store_sample 
+	     time_store_sample) 
+	 sync_src(time_store_sample
+                  time_store_sample) 
+	 dest(time_store_latency
+              time_store_latency
+              time_store_latency
+              time_store_latency) 
+	 sync_dest(time_store_sample
+		   time_store_sample));
+
+  OL_branch(exc(time_branch_exception) 
+	    rsv(time_branch_reserve
+		 time_branch_reserve
+		 time_branch_reserve
+		 time_branch_reserve
+		 time_branch_reserve) 
+ 	 pred(time_branch_sample) 
+	 src(time_branch_sample 
+	     time_branch_sample 
+	     time_branch_sample 
+	     time_branch_sample 
+	     time_branch_sample) 
+	 sync_src(time_branch_sample
+                  time_branch_sample) 
+	 dest(time_branch_latency
+              time_branch_latency
+              time_branch_latency
+              time_branch_latency) 
+	 sync_dest(time_branch_latency
+		   time_branch_latency));
+
+  OL_intcmpp(exc(time_int_cmpp_exception) 
+	    rsv(time_int_cmpp_reserve
+		 time_int_cmpp_reserve
+		 time_int_cmpp_reserve
+		 time_int_cmpp_reserve
+		 time_int_cmpp_reserve) 
+ 	 pred(time_int_cmpp_sample) 
+	 src(time_int_cmpp_sample 
+	     time_int_cmpp_sample 
+	     time_int_cmpp_sample 
+	     time_int_cmpp_sample 
+	     time_int_cmpp_sample) 
+	 sync_src(time_int_cmpp_sample
+                  time_int_cmpp_sample) 
+	 dest(time_int_cmpp_latency
+              time_int_cmpp_latency
+              time_int_cmpp_latency
+              time_int_cmpp_latency) 
+	 sync_dest(time_int_cmpp_sample
+		   time_int_cmpp_sample));
+
+  OL_intmpy(exc(time_int_multiply_exception) 
+	    rsv(time_int_multiply_reserve
+		 time_int_multiply_reserve
+		 time_int_multiply_reserve
+		 time_int_multiply_reserve
+		 time_int_multiply_reserve) 
+ 	 pred(time_int_multiply_sample) 
+	 src(time_int_multiply_sample 
+	     time_int_multiply_sample 
+	     time_int_multiply_sample 
+	     time_int_multiply_sample 
+	     time_int_multiply_sample) 
+	 sync_src(time_int_multiply_sample
+                  time_int_multiply_sample) 
+	 dest(time_int_multiply_latency
+              time_int_multiply_latency
+              time_int_multiply_latency
+              time_int_multiply_latency) 
+	 sync_dest(time_int_multiply_sample
+		   time_int_multiply_sample));
+
+  OL_intdiv(exc(time_int_divide_exception) 
+	    rsv(time_int_divide_reserve
+		 time_int_divide_reserve
+		 time_int_divide_reserve
+		 time_int_divide_reserve
+		 time_int_divide_reserve) 
+ 	 pred(time_int_divide_sample) 
+	 src(time_int_divide_sample 
+	     time_int_divide_sample 
+	     time_int_divide_sample 
+	     time_int_divide_sample 
+	     time_int_divide_sample) 
+	 sync_src(time_int_divide_sample
+                  time_int_divide_sample) 
+	 dest(time_int_divide_latency
+              time_int_divide_latency
+              time_int_divide_latency
+              time_int_divide_latency) 
+	 sync_dest(time_int_divide_sample
+		   time_int_divide_sample));
+
+  OL_floatcmpp(exc(time_float_cmpp_exception) 
+	      rsv(time_float_cmpp_reserve
+		   time_float_cmpp_reserve
+		   time_float_cmpp_reserve
+		   time_float_cmpp_reserve
+		   time_float_cmpp_reserve) 
+ 	 pred(time_float_cmpp_sample) 
+	 src(time_float_cmpp_sample 
+	     time_float_cmpp_sample 
+	     time_float_cmpp_sample 
+	     time_float_cmpp_sample 
+	     time_float_cmpp_sample) 
+	 sync_src(time_float_cmpp_sample
+                  time_float_cmpp_sample) 
+	 dest(time_float_cmpp_latency
+              time_float_cmpp_latency
+              time_float_cmpp_latency
+              time_float_cmpp_latency) 
+	 sync_dest(time_float_cmpp_sample
+		   time_float_cmpp_sample));
+
+  OL_floatmpy(exc(time_float_multiply_exception) 
+	      rsv(time_float_multiply_reserve
+		   time_float_multiply_reserve
+		   time_float_multiply_reserve
+		   time_float_multiply_reserve
+		   time_float_multiply_reserve) 
+ 	 pred(time_float_multiply_sample) 
+	 src(time_float_multiply_sample 
+	     time_float_multiply_sample 
+	     time_float_multiply_sample 
+	     time_float_multiply_sample 
+	     time_float_multiply_sample) 
+	 sync_src(time_float_multiply_sample
+                  time_float_multiply_sample) 
+	 dest(time_float_multiply_latency
+              time_float_multiply_latency
+              time_float_multiply_latency
+              time_float_multiply_latency) 
+	 sync_dest(time_float_multiply_sample
+		   time_float_multiply_sample));
+
+  OL_floatdiv(exc(time_float_divide_exception) 
+	      rsv(time_float_divide_reserve
+		   time_float_divide_reserve
+		   time_float_divide_reserve
+		   time_float_divide_reserve
+		   time_float_divide_reserve) 
+ 	 pred(time_float_divide_sample) 
+	 src(time_float_divide_sample 
+	     time_float_divide_sample 
+	     time_float_divide_sample 
+	     time_float_divide_sample 
+	     time_float_divide_sample) 
+	 sync_src(time_float_divide_sample
+                  time_float_divide_sample) 
+	 dest(time_float_divide_latency
+              time_float_divide_latency
+              time_float_divide_latency
+              time_float_divide_latency) 
+	 sync_dest(time_float_divide_sample
+		   time_float_divide_sample));
+}
+
+// *************************************************************
+// Resource Description
+
+SECTION Resource
+{
+  $for (idx in $0..(exec_units-1)) {
+    R_${idx}();
+  }
+}
+
+// Right now we have a basic 0th cycle resource usage for each resource
+
+SECTION Resource_Usage
+{
+  $for (idx in $0..(exec_units-1)) {
+    RU_${idx}(use(R_${idx}) time(0));
+  }
+}
+
+// Right now we have a simple model of one resource usage per reservation table
+
+SECTION Reservation_Table
+{
+  RT_null(use());
+  $for (idx in $0..(exec_units-1)) {
+    RT_${idx}(use(RU_${idx}));
+  }
+}
+
+// *************************************************************
+// Scheduling Alternatives
+
+// Scheduling Alternative describes a unit specific alternative.
+
+SECTION Scheduling_Alternative
+{
+  $for (idx in $0..(exec_units-1)) {
+    SA_intarith1_int_${idx}(format(OF_intarith1) latency(OL_int) resv(RT_${idx}));
+    SA_intarith2_int_${idx}(format(OF_intarith2) latency(OL_int) resv(RT_${idx}));
+    SA_intarith2_intshift_${idx}(format(OF_intarith2) latency(OL_int) resv(RT_${idx}));
+    SA_intarith2_intdiv_${idx}(format(OF_intarith2) latency(OL_intdiv) resv(RT_${idx}));
+    SA_intarith2_intmpy_${idx}(format(OF_intarith2_no_lit) latency(OL_intmpy) resv(RT_${idx}));
+
+    SA_intcmpr_int_${idx}(format(OF_intcmpr) latency(OL_int) resv(RT_${idx}));
+    SA_intcmpp_int_${idx}(format(OF_intcmpp) latency(OL_intcmpp) resv(RT_${idx}));
+
+    SA_sext_int_${idx}(format(OF_sext) latency(OL_int) resv(RT_${idx}));
+    SA_moveii_int_${idx}(format(OF_moveii) latency(OL_int) resv(RT_${idx}));
+    SA_moveip_int_${idx}(format(OF_moveip) latency(OL_int) resv(RT_${idx}));
+    SA_movepp_int_${idx}(format(OF_movepp) latency(OL_int) resv(RT_${idx}));
+    SA_movepi_int_${idx}(format(OF_movepi) latency(OL_int) resv(RT_${idx}));
+    SA_pred_int_${idx}(format(OF_pred) latency(OL_int) resv(RT_${idx}));
+
+    // Move/extract bits to/from pred -- Shail Aditya 05/26/98
+    SA_movegbp_int_${idx}(format(OF_movegbp) latency(OL_int) resv(RT_${idx}));
+    SA_movegcm_int_${idx}(format(OF_movegcm) latency(OL_int) resv(RT_${idx}));
+
+    // HPL-PD 2.0 Extn
+    SA_movegg_int_${idx}(format(OF_movegg) latency(OL_int) resv(RT_${idx}));
+
+    SA_movegc_int_${idx}(format(OF_movegc) latency(OL_int) resv(RT_${idx}));
+    SA_movecg_int_${idx}(format(OF_movecg) latency(OL_int) resv(RT_${idx}));
+    SA_movebb_int_${idx}(format(OF_movebb) latency(OL_int) resv(RT_${idx}));
+    SA_intlitmove_int_${idx}(format(OF_intlitmove) latency(OL_int) resv(RT_${idx}));
+    SA_btrlitmove_int_${idx}(format(OF_btrlitmove) latency(OL_int) resv(RT_${idx}));
+    SA_pbrlit_int_${idx}(format(OF_pbrlit) latency(OL_int) resv(RT_${idx}));
+
+    // Agressive pred_clear, pred_set
+    SA_pred_null_${idx}(format(OF_pred) latency(OL_int) resv(RT_null));
+    SA_branch_int_${idx}(format(OF_branch) latency(OL_int) resv(RT_${idx}));
+
+  }
+
+  $for (idx in $0..(exec_units-1)) {
+    SA_floatarith1_float_${idx}(format(OF_floatarith1) latency(OL_float) resv(RT_${idx}));
+    SA_floatarith1_floatdiv_${idx}(format(OF_floatarith1) latency(OL_floatdiv) resv(RT_${idx}));
+    SA_floatarith2_float_${idx}(format(OF_floatarith2) latency(OL_float) resv(RT_${idx}));
+    SA_floatarith2_floatdiv_${idx}(format(OF_floatarith2) latency(OL_floatdiv) resv(RT_${idx}));
+    SA_floatarith2_floatmpy_${idx}(format(OF_floatarith2) latency(OL_floatmpy) resv(RT_${idx}));
+    SA_floatarith3_floatmpy_${idx}(format(OF_floatarith3) latency(OL_floatmpy) resv(RT_${idx}));
+
+    SA_floatcmpr_float_${idx}(format(OF_floatcmpr) latency(OL_float) resv(RT_${idx}));
+    SA_floatcmpp_float_${idx}(format(OF_floatcmpp) latency(OL_floatcmpp) resv(RT_${idx}));
+
+    SA_moveff_float_${idx}(format(OF_moveff) latency(OL_float) resv(RT_${idx}));
+    SA_convif_float_${idx}(format(OF_moveif) latency(OL_float) resv(RT_${idx}));
+    SA_convff_float_${idx}(format(OF_moveff) latency(OL_float) resv(RT_${idx}));
+    SA_convfi_float_${idx}(format(OF_movefi) latency(OL_float) resv(RT_${idx}));
+
+    // HPL-PD 2.0 Extn
+    SA_floatlitmove_float_${idx}(format(OF_floatlitmove) latency(OL_float) resv(RT_${idx}));
+  }
+
+  $for (idx in $0..(exec_units-1)) {
+    // standard loads
+    $for(format in intload_std intloadinc intloadgdisp floatload_std floatloadinc floatloadgdisp intloadext_std intloadgdispext_std){
+      $for((src in C1)
+	   (lat in load1)){
+	SA_${format}_${src}_${idx}(format(OF_${format}) latency(OL_${lat}) resv(RT_${idx}));
+      }
+    }
+
+    $for(format in intloadgdisp){
+      $for((src in C1)
+	   (lat in load1)){
+	SA_${format}_H_${src}_${idx}(format(OF_${format}_H) latency(OL_${lat}) resv(RT_${idx}));
+      }
+    }
+
+    // standard stores
+    $for(format in intstore_std intstoreinc intstoregdisp floatstore_std floatstoreinc floatstoregdisp){
+      SA_${format}_${idx}(format(OF_${format}) latency(OL_store) resv(RT_${idx}));
+    }
+    $for(format in intstore_std intstoregdisp){
+      SA_${format}_H_${idx}(format(OF_${format}_H) latency(OL_store) resv(RT_${idx}));
+    }
+
+    SA_moveif_C1_${idx}(format(OF_moveif) latency(OL_load1) resv(RT_${idx}));
+    SA_movefi_C1_${idx}(format(OF_movefi) latency(OL_load1) resv(RT_${idx}));
+    SA_predload_C1_${idx}(format(OF_predload) latency(OL_load1) resv(RT_${idx}));
+    SA_predstore_store_${idx}(format(OF_predstore) latency(OL_store) resv(RT_${idx}));
+
+    // Explicit save/restore formats - Shail Aditya 05/26/98
+    SA_intsave_store_${idx}(format(OF_intsave) latency(OL_store) resv(RT_${idx}));
+    SA_intrestore_C1_${idx}(format(OF_intrestore) latency(OL_load1) resv(RT_${idx}));
+    SA_floatsave_store_${idx}(format(OF_floatsave) latency(OL_store) resv(RT_${idx}));
+    SA_floatrestore_C1_${idx}(format(OF_floatrestore) latency(OL_load1) resv(RT_${idx}));
+    SA_brsave_store_${idx}(format(OF_brsave) latency(OL_store) resv(RT_${idx}));
+    SA_brrestore_C1_${idx}(format(OF_brrestore) latency(OL_load1) resv(RT_${idx}));
+
+    SA_intsaveg_store_${idx}(format(OF_intsaveg) latency(OL_store) resv(RT_${idx}));
+    SA_intrestoreg_C1_${idx}(format(OF_intrestoreg) latency(OL_load1) resv(RT_${idx}));
+    SA_floatsaveg_store_${idx}(format(OF_floatsaveg) latency(OL_store) resv(RT_${idx}));
+    SA_floatrestoreg_C1_${idx}(format(OF_floatrestoreg) latency(OL_load1) resv(RT_${idx}));
+    SA_brsaveg_store_${idx}(format(OF_brsaveg) latency(OL_store) resv(RT_${idx}));
+    SA_brrestoreg_C1_${idx}(format(OF_brrestoreg) latency(OL_load1) resv(RT_${idx}));
+  }
+
+  $for (idx in $0..(exec_units-1)) {
+    SA_brucond_branch_${idx}(format(OF_brucond) latency(OL_branch) resv(RT_${idx}));
+    SA_brcond_branch_${idx}(format(OF_brcond) latency(OL_branch) resv(RT_${idx}));
+    SA_brlink_branch_${idx}(format(OF_brlink) latency(OL_branch) resv(RT_${idx}));
+    SA_brtop_branch_${idx}(format(OF_brtop) latency(OL_branch) resv(RT_${idx}));
+    SA_brlc_branch_${idx}(format(OF_brlc) latency(OL_branch) resv(RT_${idx}));
+    SA_brdvi_branch_${idx}(format(OF_brdvi) latency(OL_branch) resv(RT_${idx}));
+    SA_brdvf_branch_${idx}(format(OF_brdvf) latency(OL_branch) resv(RT_${idx}));
+
+  }
+}
+
+// *************************************************************
+// HPL-PD Operations (Architecture Version 1.0)
+
+SECTION Operation
+{
+  // **** Integer operations ****
+  $for (idx in $0..(exec_units-1)){
+
+    // Table 2: Integer computation operations 
+    $for (class in intarith1_int intarith2_int intarith2_intshift intarith2_intdiv intarith2_intmpy){
+      $for (op in ${OP_${class}}){
+	$for(w in ${int_alu_widths}) {
+	  "${op}_${w}.${idx}"(alt(SA_${class}_${idx}));
+	}
+      }
+    }
+
+    // Table 4: Conversion operations 
+    $for(op in ${OP_sign_extend}){
+      $for(w in ${int_extract_widths}){
+	"${op}_${w}.${idx}"(alt(SA_sext_int_${idx}));
+      }
+    }
+
+    // Table 5: Move operations
+    $for(class in movepi movegbp movegcm){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_${class}_int_${idx}));
+      }
+    }
+
+    // Mass clear operation for PR
+    $for(op in ${OP_mass_pred_clear}) {
+      "${op}.${idx}"(alt(SA_pred_int_${idx}));
+    }
+
+    // Move pseudo operations
+    $for(class in moveip movepp){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_${class}_int_${idx}));
+      }
+    }
+
+    $for(op in ${OP_pred_writes}){
+      "${op}.${idx}"(alt(SA_pred_null_${idx}));
+    }
+
+    // HPL-PD 2.0 Extn
+    // Split moves instead of MOVE
+    $for(class in movegc movecg movebb){
+      $for(op in ${OP_${class}}) {
+	"${op}.${idx}"(alt(SA_${class}_int_${idx}));
+      }
+    }
+
+    // Int literal moves to GPR
+    $for(op in ${OP_int_literal_moves}) {
+      "${op}.${idx}"(alt(SA_intlitmove_int_${idx}));
+    }
+
+    // Table 8: Compare-to-register operations
+    $for(op in ${OP_int_compare_to_reg}){
+      $for(w in ${int_alu_widths}){
+	$for(ic in ${integer_compare_conds}){
+	  "${op}_${w}_${ic}.${idx}"(alt(SA_intcmpr_int_${idx}));
+	}
+      }
+    }
+
+    // Table 9: Two-target compare-to-predicate operations
+    $for(op in ${OP_int_cmp_pred_two}){
+      $for(w in ${int_alu_widths}){
+	$for(ic in ${integer_compare_conds}){
+	  $for(da1 in ${cmpp_dest_actions}){
+	    $for(da2 in ${cmpp_dest_actions}){	
+	      "${op}_${w}_${ic}_${da1}_${da2}.${idx}"(alt(SA_intcmpp_int_${idx}));
+	    }
+	  }
+	}
+      }
+    }
+
+/*  ----------
+    // HPL-PD 2.0 extension: One target compare to predicate operations. 
+    $for(op in ${OP_int_cmp_pred_one}){
+      $for(w in ${int_alu_widths}){
+	$for(ic in ${integer_compare_conds}){
+	  $for(da1 in ${cmpp_dest_actions}){
+	    "${op}_${w}_${ic}_${da1}.${idx}"(alt(SA_intcmppi_int_i${idx}));
+	  }
+	}
+      }
+    }
+--------- */
+
+    // Table 16: Prepare to branch (cast on int unit)
+    $for(op in ${OP_pbrs}){
+      "${op}.${idx}"(alt(SA_branch_int_${idx}));
+    }
+
+    // HPL-PD 2.0 extn
+    // literal moves to BTR
+    $for(op in ${OP_btr_literal_moves}) {
+      "${op}.${idx}"(alt(SA_btrlitmove_int_${idx}));
+    }
+
+
+    $for(class in moveii){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_moveii_int_${idx}));
+      }
+    }
+    $for(class in movegg){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_movegg_int_0));
+      }
+    }
+  } // end **** Integer Operations ****
+
+  // **** Float Operations ****
+  $for (idx in $0..(exec_units-1)){
+
+    // Table 3: Floating-point computation operations
+    $for (class in floatarith1_float floatarith1_floatdiv floatarith2_float floatarith2_floatdiv floatarith2_floatmpy floatarith3_floatmpy){
+      $for(op in ${OP_${class}}){
+	$for(w in ${float_widths}){
+	  "${op}_${w}.${idx}"(alt(SA_${class}_${idx}));
+	}
+      }
+    }
+
+    // Table 4: Conversion operations 
+    $for(class in convif convfi convff){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_${class}_float_${idx}));
+      }
+    }
+
+    // Table 5: Move operations
+    $for(op in ${OP_moveff}){
+      $for(w in ${float_widths}){
+	"${op}_${w}.${idx}"(alt(SA_moveff_float_${idx}));
+      }
+    }
+
+    // HPL-PD 2.0 Extn
+    // Float literal moves to FPR
+    $for(op in ${OP_float_literal_moves}) {
+      "${op}.${idx}"(alt(SA_floatlitmove_float_${idx}));
+    }
+
+    // Table 8: Compare-to-register operations
+    $for(op in ${OP_float_compare_to_reg}){
+      $for(w in ${float_widths}){
+	$for(fc in ${float_compare_conds}){
+	  "${op}_${w}_${fc}.${idx}"(alt(SA_floatcmpr_float_${idx}));
+	}
+      }
+    }
+
+    // Table 9: Two-target compare-to-predicate operations
+    $for(op in ${OP_float_cmp_pred_two}){
+      $for(w in ${float_widths}){
+	$for(fc in ${float_compare_conds}){
+	  $for(da1 in ${cmpp_dest_actions}){
+	    $for(da2 in ${cmpp_dest_actions}){	
+	      "${op}_${w}_${fc}_${da1}_${da2}.${idx}"(alt(SA_floatcmpp_float_${idx}));
+	    }
+	  }
+	}
+      }
+    }
+
+/*  ----------
+    // HPL-PD 2.0 extension: One target compare to predicate operations. 
+    $for(op in ${OP_float_cmp_pred_one}){
+      $for(w in ${float_widths}){
+	$for(fc in ${float_compare_conds}){
+	  $for(da1 in ${cmpp_dest_actions}){
+	    "${op}_${w}_${fc}_${da1}.${idx}"(alt(SA_floatcmppi_float_${idx}));
+	  }
+	}
+      }
+    }
+--------- */
+
+  } // end **** Float Operations ****
+
+  // **** Memory Operations ****
+  $for (idx in $0..(exec_units-1)){
+
+    // Table 5: Move operations
+    $for (class in moveif movefi){
+      $for(op in ${OP_${class}}){
+	$for(rh in ${float_register_halves}){
+	  "${op}_${rh}.${idx}"(alt(SA_${class}_C1_${idx}));
+	}
+      }
+    }
+
+    // Table 12, 13, 14: Load/store operations for cache/main memory
+    $for(class in intloadinc intloadgdisp intloadext_std intloadgdispext_std){
+      $for(op in ${OP_${class}}){
+	$for(ss in ${latency_src_cache_specifiers}){
+	  $for(ts in ${target_cache_specifiers}){
+	    $for(w in B W){
+	      "${op}_${w}_${ss}_${ts}.${idx}"(alt(SA_${class}_${ss}_${idx}));
+	    }
+	  }
+	}
+      }
+    }
+
+    $for(class in intloadinc intloadext_std intloadgdispext_std){
+      $for(op in ${OP_${class}}){
+	$for(ss in ${latency_src_cache_specifiers}){
+	  $for(ts in ${target_cache_specifiers}){
+	    $for(w in H){
+	      "${op}_${w}_${ss}_${ts}.${idx}"(alt(SA_${class}_${ss}_${idx}));
+	    }
+	  }
+	}
+      }
+    }
+
+    // Halfword load/stores can only use 8 bit literals
+    $for(class in intloadgdisp){
+      $for(op in ${OP_${class}}){
+	$for(ss in ${latency_src_cache_specifiers}){
+	  $for(ts in ${target_cache_specifiers}){
+	    $for(w in H){
+	      "${op}_${w}_${ss}_${ts}.${idx}"(alt(SA_${class}_H_${ss}_${idx}));
+	    }
+	  }
+	}
+      }
+    }
+
+    // Float load ops
+    $for(class in floatloadgdisp floatload_std floatloadinc){
+      $for(op in ${OP_${class}}){
+	$for(ss in ${latency_src_cache_specifiers}){
+	  $for(ts in ${target_cache_specifiers}){
+	    $for(w in ${float_widths}){
+	      "${op}_${w}_${ss}_${ts}.${idx}"(alt(SA_${class}_${ss}_${idx}));
+	    }
+	  }
+	}
+      }
+    }
+
+    // Integer store ops
+    $for(class in intstoregdisp intstoreinc){
+      $for(op in ${OP_${class}}){
+	$for(ts in ${target_cache_specifiers}){
+	  $for(w in B W){
+	    "${op}_${w}_${ts}.${idx}"(alt(SA_${class}_${idx}));
+	  }
+	}
+      }
+    }
+
+    $for(class in intstoreinc){
+      $for(op in ${OP_${class}}){
+	$for(ts in ${target_cache_specifiers}){
+	  $for(w in H){
+	    "${op}_${w}_${ts}.${idx}"(alt(SA_${class}_${idx}));
+	  }
+	}
+      }
+    }
+
+    $for(class in intstoregdisp){
+      $for(op in ${OP_${class}}){
+	$for(ts in ${target_cache_specifiers}){
+	  $for(w in H){
+	    "${op}_${w}_${ts}.${idx}"(alt(SA_${class}_H_${idx}));
+	  }
+	}
+      }
+    }
+
+    // Float store ops
+    $for(class in floatstore_std floatstoreinc floatstoregdisp){
+      $for(op in ${OP_${class}}){
+	$for(ts in ${target_cache_specifiers}){
+	  $for(w in ${float_widths}){
+	    "${op}_${w}_${ts}.${idx}"(alt(SA_${class}_${idx}));
+	  }
+	}
+      }
+    }
+
+    // Explicit save/restore formats - Shail Aditya 05/26/98
+    $for(class in intsave floatsave brsave intsaveg floatsaveg brsaveg){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_${class}_store_${idx}));
+      }
+    }
+    $for(class in intrestore floatrestore brrestore intrestoreg floatrestoreg brrestoreg) {
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_${class}_C1_${idx}));
+      }
+    }
+
+    // Operations for predicate spilling. These will go away soon.
+    $for(op in ${OP_pfill}){
+      "${op}.${idx}"(alt(SA_predload_C1_${idx}));
+    }
+    $for(op in ${OP_pspill}){
+      "${op}.${idx}"(alt(SA_predstore_store_${idx}));
+    }
+
+  } // end **** Memory Operations ****
+
+    // Integer load ops
+    $for(class in intload_std){
+      $for(op in ${OP_${class}}){
+	$for(ss in ${latency_src_cache_specifiers}){
+	  $for(ts in ${target_cache_specifiers}){
+	    $for(w in B H W){
+	      "${op}_${w}_${ss}_${ts}.0"(alt(SA_${class}_${ss}_0));
+	    }
+	  }
+	}
+      }
+    }
+
+    // Integer store ops
+    $for(class in intstore_std){
+      $for(op in ${OP_${class}}){
+	$for(ts in ${target_cache_specifiers}){
+	  $for(w in B H W){
+	    "${op}_${w}_${ts}.0"(alt(SA_${class}_0));
+	  }
+	}
+      }
+    }
+
+
+  // **** Branch Operations ****
+  $for (idx in $0..(exec_units-1)){
+    $for(class in brucond brcond brlink brlc brtop brdvi brdvf){
+      $for(op in ${OP_${class}}){
+	"${op}.${idx}"(alt(SA_${class}_branch_${idx}));
+      }
+    }
+  } // end **** Branch Operations ****
+}

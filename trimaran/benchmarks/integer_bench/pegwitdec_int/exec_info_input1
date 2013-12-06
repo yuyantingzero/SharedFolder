@@ -1,0 +1,21 @@
+ # IMPACT Public Release (www.crhc.uiuc.edu/IMPACT)            Version 2.33  #
+ # IMPACT Trimaran Release (www.trimaran.org)                  July 12, 1999 #
+###############################################################################
+#  Run 'read_exec_info --help | more' for documentation.
+#
+#  Source of this file's information:
+#   The IMPACT team 
+#
+#  Revision history for this file:
+#     2/99  Created by John C. Gyllenhaal (www.crhc.uiuc.edu/IMPACT)
+###############################################################################
+
+DESCRIPTION="unepic benchmark";
+SETUP="cp -f ${BENCH_DIR}/input1/* .";
+PREFIX=" ";
+ARGS="-d pegwit.enc pegwit.dec"
+CHECK="diff pegwit.dec ${BENCH_DIR}/output1/pegwit.dec";
+CLEANUP="do_multi rm my.sec; rm my.pub; rm encryption_junk; rm pgptest.plain ; rm pegwit.dec";
+
+# Simulate everything
+SKIP="0";

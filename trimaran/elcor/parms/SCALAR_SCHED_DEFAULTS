@@ -1,0 +1,117 @@
+#
+#	Scalar scheduler default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Scalar_sched declaration
+
+    # Debug dump related switches
+
+      # If yes, operator<< on ops prints out op's sched time and whether
+      # it is speculative (see Graph/op.cpp); always turn this to 'yes'
+      stime_in_op	 	= yes;
+
+      # If yes, prints on cout, src and dest op ids of an edge and edge latency
+      # when reg_flow, reg_anti or reg_out edges are created
+      print_elcorid_edges = no;
+
+    # These flags control whether, when and how graph of partially scheduled code
+    # is displayed (need to have daVinci working on your platform)
+
+      # Controls whether hyperblock graph is displayed by daVinci
+      # if this flag is 'no' rest of the flags in this block are don't cares
+      graph_display	= no;
+
+      # Whether control-0 (C0 edges) should be displayed in hyperblock graph
+      display_C0edges	= no;
+
+      # Whether operands of operations should be displayed inside each op's node
+      display_operands	= no;
+
+      # Whether related operations should be displayed (i.e. switches and merges)
+      display_relops	= no;
+
+      # One of the following three must be 'yes' in addition to graph_display
+      # above, for the graphs to be displayed
+
+      # Whether graph should be displayed just prior to entering scheduling loop
+      display_before_sched = no;
+
+      # Whether graph should be displayed whenever an operation is scheduled in a
+      # time slot larger than all previously scheduled time slots
+      display_every_cycle = no;
+
+      # Whether graph should be displayed just after scheduling loop is done
+      display_after_sched = no;
+
+
+    # scheduling algorithm that is used
+    # CYCLE_SCHED = 0 - must be used with meld scheduling or load scheduling
+    # LIST_SCHED = 1 - as best compile times and generates as good a schedule
+    #                  provided branch latency is unity
+    # LIST_BT_SCHED = 2 - list back tracking scheduler
+    # OPER_SCHED = 3 - operation scheduler
+    # 
+    # Note, LIST_BT_SCHED or OPER_SCHED must be used if negative edge latencies
+    # can occur, ie with multi-cycle branches.
+    sched_model		= 1;
+
+    # Meld scheduling model: NO_MELD = 0; FLOW_MELD = 1; FULL_MELD = 2
+    # For meld scheduling, use FULL_MELD (2); FLOW_MELD is not supported.
+    meld_model          = 0
+
+    # Assume the target processor has register interlocking, can only be used
+    # if the branch latency is 1
+    interlocking        = no;
+
+    # Priority model: controls the treatment of 0 latency dependences by the
+    # scheduler. 
+    # ALL_PRIORITIZED = 0: 0-latency dependent operations can be scheduled in 
+    # a single cycle provided dependences flow from left to right. Used mainly 
+    # to schedule operations with 0-latency register anti-dependences or
+    # memory operations with 0-latency memory dependences (flow, anti or out) 
+    # in a single cycle. In these cases, the target machine can execute
+    # operations in parallel or in left-to-right order but must support memory
+    # port priority. 
+    # MEM_PRIORITIZED = 1: Only 0-latency memory dependence are permitted
+    # bewteen operations in a single cycle provided the dependences go from
+    # left to right. The target machine can execute operations in parallel or
+    # in left-to-right order but must support memory port priority. 
+    # NONE_PRIORITIZED = 2 - 0-latency dependent operations can't be scheduled
+    # in a single cycle; they must be separated by at least one cycle.  
+    # The target machine can execute operations in parallel or in
+    # left-to-right and need not support memory port priority. 
+    # FREEZE_PRIORITIZED = 3 - any set of 0-latency dependent operations
+    # 	can be scheduled in a single cycle; dependences need not flow
+    #	from left to right, with the exception for branch-type op to other-op
+    #	0-latency edge where edge latency is increased to 1 and other-op
+    #	is schedulable in next cycle
+    priority_model      = 3;
+
+    # Strategy for computing internal scheduling priorities,
+    # REGULAR = 0 - based on weighted height of op above exits
+    # CHANDRAS = 1 - accounts for work (number of ops) required to retire an exit
+    # CRITICAL_PATH = 2 - based on height of op above last exit
+    op_priority_model	= 0;
+
+    # When set, pads noops before jsrs to prevent dangles into callees.
+    # Should be done if emulation/simulation requires that operations complete
+    # writing all output values before transfer of control to another function.
+    noop_pads_for_calls = yes;
+
+    # Allow negative latencies on edges from ops to branches.  Turn this on, if
+    # you need to evaluate multi-cycle branches and place ops in delay slots
+    # of branches
+    allow_negative_latencies = no;
+
+    # Sort branches to the right most operation slots in each cycle.  Should be
+    # done if emulation/simulation requires branches to be the right most 
+    # operations to simplify their job.
+    reorder_scheduled_ops = yes;
+
+    # Move branches/jsrs down by branch latency during prepass/postpass
+    prepass_move_branches_to_branch_point = yes;
+    postpass_move_branches_to_branch_point = no;
+end)

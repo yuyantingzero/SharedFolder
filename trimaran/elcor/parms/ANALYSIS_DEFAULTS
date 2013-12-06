@@ -1,0 +1,52 @@
+#
+#	Analysis default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+(Elcor_Analysis declaration
+
+# pqs type can be:
+#	1bit_triv - pred expr is a single bit, no partition graph.
+#	1sym_triv - pred expr is a single predicate, no partition graph.
+#	1sym      - pred expr is a single predicate, builds partition graph.
+#	1dnf      - pred expr is a 1-dnf expression, builds partition graph.
+#
+    pqs_default = 1dnf;
+    pqs_hb = 1dnf;
+
+# partition_graph type can be:
+#	default - graph implementation, should work on all predicated code
+#	bv - bitvector implementation.  maybe faster, not fully general
+    pg_type = default;
+
+# timing of pqs initialization and a synthetic transfer function test
+    pqs_timing = no;
+
+
+# Adjustment of the incoming widths (before width analysis)
+#	0 - do nothing
+#	1 - promote everything to nearest and larger C width (ie 1, 8, 16, 32)
+#	2 - promote everything to 32 bit
+#
+   width_preprocess_level = 0;
+
+# Level of sophistication for data width analysis
+#	0 - do nothing
+#	1 - future use (local analysis only)
+#	2 - full global analysis
+#
+    width_analysis_level = 2;
+
+# Adjustment of the incoming widths (after width analysis)
+#	0 - do nothing
+#	1 - promote everything to nearest and larger C width (ie 1, 8, 16, 32)
+#	2 - promote everything to 32 bit
+#
+    width_postprocess_level = 0;
+
+# Punt if an operand turns out to be width 0.  It probably indicates
+# a program error.  Note, it could just be an optimization opportunity.
+    punt_on_width_zero = no;
+
+end)

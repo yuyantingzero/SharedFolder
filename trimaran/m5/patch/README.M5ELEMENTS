@@ -1,0 +1,72 @@
+
+################################################################################
+###############################   M5elements   #################################
+################################################################################
+
+## OVERVIEW
+
+M5elements is an adaption of the M5 Simulator System [1] that allows one to
+use the M5 memory subsystem as a library for an external simulator. The
+external simulator can link in the library. M5elements enables (and requires)
+the external simulator to control M5's clock, whereas normally M5 has its own
+main() function that controls the clock.
+
+## HISTORY:
+
+2005.04.11:
+    created initial version of M5elements
+        - Steve Lieberman, University of Michigan <lieberm@umich.edu>
+2005.12.16:
+    updated to work with M5 Simulator v1.1
+        - Steve Lieberman, University of Michigan <lieberm@umich.edu>
+2006.01.17:
+    added new method get_outstanding_requests() to cache.hh
+        - Steve Lieberman, University of Michigan <lieberm@umich.edu>
+2006.01.19:
+    created automated patch to work with M5 Simulator v1.1
+        - Steve Lieberman, University of Michigan <lieberm@umich.edu>
+
+## CHANGES FROM M5
+
+We started with a release build of M5, version 1.1, obtained from SourceForge.
+The original source is stored in ORIG_M5_SOURCE/. We document the changes
+here so that future versions of M5 can be updated to have M5elements
+functionality.
+
+M5 can generally be run in one of two modes: "full system" or "syscall
+emulation." M5elements only supports the latter, since we only aim to
+simulate the memory system anyway.
+
+We made the following changes to M5:
+
+    (1) UPDATING SConscript
+            SConscript is M5's build file. We modified it to allow building
+            syscall emulation sources without 'sim/main.cc' and to allow
+            building both static and shared libraries.
+
+    (2) ADDING m5elements/ CODE:
+            The m5elements/ subdirectory contains code that creates the
+            virtual 'clusters' which act as agents in the M5 system, but are
+            externally controlled via the library interface.
+
+    (3) MODIFYING mem/mem_req.hh:
+             We want to store 'register_id' along with each memory request,
+             because this is used by one external simulator (simu).
+
+    (4) MODIFYING sim/syscall_emul.hh:
+             Just included a header file because M5 doesn't do it and gcc 4
+             complains.
+
+    (5) ADDING envrc
+             We need an envrc file so we can compile M5. This sets up the
+             directory for M5 output, and fixes the environment var CXX
+             if it was changed to a non-C++ compiler (for example, Trimaran
+             changes CXX to be gcc). 
+
+
+## REFERENCES
+
+[1] The M5 Simulator System. http://m5.eecs.umich.edu/
+
+
+

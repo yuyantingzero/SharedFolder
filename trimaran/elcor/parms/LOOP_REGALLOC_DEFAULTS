@@ -1,0 +1,32 @@
+#
+#	Rotating register allocator default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Loop_regalloc declaration
+
+    # Perform wand_only allocation, that is, allocation only for the
+    # steady-state part of the loop. Wand-only allocation requires prolog and epilog
+    # peeling after the allocation. The allocator can be queried to return the
+    # required amount of peeling. Although the allocator provides this feature, we
+    # don't use and support this feature in the compiler as it requires peeling.
+    #   0 -- Not wand_only (with leading and trailing blades)
+    #   1 -- wand_only
+    #   0 is the default.
+    rr_wand_only = 0;
+
+    # To use open-loop or closed loop model of rotating registers.
+    #   0 -- closed loop
+    #   1 -- open loop
+    # We provide both but I believe HPL-PD manual says it is open loop. In any
+    # case open loop is default.
+    rr_open_loop = 1;
+
+    # r_pred_alloc: To do predicate-cognizant allocation or not.
+    # 0 -- no
+    # 1 -- yes
+    # 1 is the default.
+    rr_pred_alloc = 1;
+end)

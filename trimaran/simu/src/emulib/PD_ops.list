@@ -1,0 +1,1802 @@
+#  LICENSE NOTICE
+#  --------------
+
+#  IT IS  A BREACH OF  THE LICENSE AGREEMENT  TO REMOVE THIS  NOTICE FROM
+#  THIS  FILE  OR SOFTWARE  OR  ANY MODIFIED  VERSIONS  OF  THIS FILE  OR
+#  SOFTWARE.
+
+#  Copyright notices/Licensor(s) Identification
+#  --------------------------------------------
+#  Each of  the entity(ies) whose name properly  appear immediately below
+#  in connection with a copyright notice is a Licensor(s) under the terms
+#  that follow.
+
+#  Copyright  1998  New  York  University.  All rights  reserved  by  the
+#  foregoing, respectively.
+
+#  Copyright 2001 Center for  Research on Embedded Systems and Technology
+#  at the  Georgia Institute  of Technology. All  rights reserved  by the
+#  foregoing, respectively.
+
+#  License agreement
+#  -----------------
+
+#  The  code contained  in this  file  including both  binary and  source
+#  (hereafter,  Software)  is subject  to  copyright  by Licensor(s)  and
+#  ownership remains with Licensor(s).
+
+#  Licensor(s)  grants you  (hereafter, Licensee)  a license  to  use the
+#  Software for  academic, research and internal  business purposes only,
+#  without  a  fee.  "Internal  business  use"  means  that Licensee  may
+#  install, use and execute the Software for the purpose of designing and
+#  evaluating products.   Licensee may also disclose  results obtained by
+#  executing  the  Software,  as  well as  algorithms  embodied  therein.
+#  Licensee may  distribute the Software  to third parties  provided that
+#  the copyright notice and this statement appears on all copies and that
+#  no  charge  is  associated  with  such copies.   No  patent  or  other
+#  intellectual property license is granted or implied by this Agreement,
+#  and this  Agreement does not  license any acts except  those expressly
+#  recited.
+
+#  Licensee may  make derivative works,  which shall also be  governed by
+#  the  terms of  this  License Agreement.  If  Licensee distributes  any
+#  derivative work based  on or derived from the  Software, then Licensee
+#  will abide by the following terms.  Both Licensee and Licensor(s) will
+#  be  considered joint  owners of  such derivative  work  and considered
+#  Licensor(s) for  the purpose of distribution of  such derivative work.
+#  Licensee shall  not modify this  agreement except that  Licensee shall
+#  clearly  indicate  that  this  is  a  derivative  work  by  adding  an
+#  additional copyright notice in  the form "Copyright <year> <Owner>" to
+#  other copyright notices above, before the line "All rights reserved by
+#  the foregoing, respectively".   A party who is not  an original author
+#  of such derivative works within  the meaning of US Copyright Law shall
+#  not modify or add his name to the copyright notices above.
+
+#  Any Licensee  wishing to  make commercial use  of the  Software should
+#  contact each and every Licensor(s) to negotiate an appropriate license
+#  for  such  commercial  use;  permission  of all  Licensor(s)  will  be
+#  required for such a  license.  Commercial use includes (1) integration
+#  of all or part  of the source code into a product  for sale or license
+#  by or on  behalf of Licensee to third parties,  or (2) distribution of
+#  the Software  to third  parties that need  it to utilize  a commercial
+#  product sold or licensed by or on behalf of Licensee.
+
+#  LICENSOR (S)  MAKES NO REPRESENTATIONS  ABOUT THE SUITABILITY  OF THIS
+#  SOFTWARE FOR ANY  PURPOSE.  IT IS PROVIDED "AS  IS" WITHOUT EXPRESS OR
+#  IMPLIED WARRANTY.   LICENSOR (S) SHALL  NOT BE LIABLE FOR  ANY DAMAGES
+#  SUFFERED BY THE USERS OF THIS SOFTWARE.
+
+#  IN NO EVENT UNLESS REQUIRED BY  APPLICABLE LAW OR AGREED TO IN WRITING
+#  WILL ANY  COPYRIGHT HOLDER, OR ANY  OTHER PARTY WHO  MAY MODIFY AND/OR
+#  REDISTRIBUTE THE  PROGRAM AS PERMITTED  ABOVE, BE LIABLE  FOR DAMAGES,
+#  INCLUDING  ANY GENERAL, SPECIAL,  INCIDENTAL OR  CONSEQUENTIAL DAMAGES
+#  ARISING OUT OF THE USE OR  INABILITY TO USE THE PROGRAM (INCLUDING BUT
+#  NOT  LIMITED TO  LOSS OF  DATA OR  DATA BEING  RENDERED  INACCURATE OR
+#  LOSSES SUSTAINED BY  YOU OR THIRD PARTIES OR A  FAILURE OF THE PROGRAM
+#  TO  OPERATE WITH ANY  OTHER PROGRAMS),  EVEN IF  SUCH HOLDER  OR OTHER
+#  PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+#  By using  or copying  this Software, Licensee  agrees to abide  by the
+#  copyright law and all other applicable laws of the U.S., and the terms
+#  of  this license  agreement. Any  individual Licensor  shall  have the
+#  right  to terminate this  license immediately  by written  notice upon
+#  Licensee's   breach   of,  or   non-compliance   with,   any  of   its
+#  terms.  Licensee may  be held  legally responsible  for  any copyright
+#  infringement  that is caused  or encouraged  by Licensee's  failure to
+#  abide     by    the     terms    of     this     license    agreement.
+
+
+[int_arith]
+# Integer arithmetic operations
+
+ADD_W		?ICL,ICL:IC;sp	Add				dest1 = (signed long)src1 + (signed long)src2
+ADDL_W	?ICL,ICL:IC;sp	Add unsigned		dest1 = src1 + src2
+SUB_W		?ICL,ICL:IC;sp	Subtract			dest1 = (signed long)src1 - (signed long)src2
+SUBL_W	?ICL,ICL:IC;sp	Subtract unsigned		dest1 = src1 - src2
+MPY_W		?ICL,ICL:IC;sp	Multiply			dest1 = (signed long)src1 * (signed long)src2
+MPYL_W	?ICL,ICL:IC;sp	Multiply unsigned		dest1 = src1 * src2
+DIV_W		?ICL,ICL:IC;sp	Divide			dest1 = (signed long)src1 / (signed long)src2
+DIVL_W	?ICL,ICL:IC;sp	Divide unsigned		dest1 = src1 / src2
+REM_W		?ICL,ICL:IC;sp	Remainder			dest1 = (signed long)src1 % (signed long)src2
+REML_W	?ICL,ICL:IC;sp	Remainder unsigned	dest1 = src1 % src2
+EXTRACT_W	?IC,L,L:IC;sp	Extract bits			dest1 = (((src1 >> src2) & ~(-1 << src3)) | ((src1&(1<<(src2+src3-1)))?(-1<<src3):0))
+EXTRACTU_W	?IC,L,L:IC;sp	Extract bits unsigned		dest1 = ((src1 >> src2) & ~(-1 << src3))
+
+# SLARSEN: Integer min and max
+MIN_W		?ICL,ICL:IC;sp	Min				dest1 = src1 < src2 ? src1 : src2
+MAX_W		?ICL,ICL:IC;sp	Max				dest1 = src1 > src2 ? src1 : src2
+
+ADD_CARRY_W		?ICL,ICL,ICL:IC,ICU;sp	Add with carry			dest1 = (signed long)src1 + (signed long)src2 + (signed long)src3; dest2 = 0; if((unsigned long)dest1 < (unsigned long)src1) dest2 = 1;
+ADDL_CARRY_W		?ICL,ICL,ICL:IC,ICU;sp	Add with carry			dest1 = src1 + src2 + src3; dest2 = 0; if((unsigned)dest1 < (unsigned)src1) dest2 = 1;
+SUB_CARRY_W		?ICL,ICL,ICL:IC,ICU;sp	Sub with carry			dest1 = (signed long)src1 - (signed long)src2 - (signed long)src3; dest2 = 0; if((unsigned long)dest1 > (unsigned long)src1) dest2 = 1;
+SUBL_CARRY_W		?ICL,ICL,ICL:IC,ICU;sp	Subl with carry			dest1 = src1 - src2 - src3; dest2 = 0; if((unsigned)dest1 > (unsigned)src1) dest2 = 1;
+MPY_WIDE_W		?ICL,ICL:ICU,IC;sp	Wide multiply			dest2 = (((long long)src1) * ((long long)src2)) & 0xFFFFFFFF; dest1 = ((((long long)src1) * ((long long)src2)) >> 32) & 0xFFFFFFFF;
+MPYL_WIDE_W		?ICL,ICL:ICU,IC;sp	Wide multiply			dest2 = (((long long)src1) * ((long long)src2)) & 0xFFFFFFFF; dest1 = ((((long long)src1) * ((long long)src2)) >> 32) & 0xFFFFFFFF;
+
+[int_logic]
+# Integer logical operations
+
+AND_W		?ICL,ICL:IC;sp	And				dest1 = src1 & src2
+ANDCM_W	?ICL,ICL:IC;sp	And complement		dest1 = src1 & (~src2)
+NAND_W	?ICL,ICL:IC;sp	Nand				dest1 = ~(src1 & src2)
+OR_W		?ICL,ICL:IC;sp	Or				dest1 = src1 | src2
+ORCM_W	?ICL,ICL:IC;sp	Or complement		dest1 = src1 | (~src2)
+NOR_W		?ICL,ICL:IC;sp	Nor				dest1 = ~(src1 | src2)
+XOR_W		?ICL,ICL:IC;sp	Exclusive Or		dest1 = src1 ^ src2
+XORCM_W	?ICL,ICL:IC;sp	Exclusive Or complement	dest1 = src1 ^ (~src2)
+
+
+[int_shift]
+# Integer shift operations
+
+SHL_W		?ICL,ICL:IC;sp	Shift left				dest1 = (src2 < 32) ? (src1 << src2) : 0
+SHLA_W	?ICL,ICL:IC;sp	Shift left arithmetic		dest1 = (src1 << src2) | (src1 & (1 << 31))
+SHR_W		?ICL,ICL:IC;sp	Shift right				dest1 = src1 >> src2
+SHRA_W	?ICL,ICL:IC;sp	Shift right arithmetic		dest1 = ((signed long)src1) >> src2
+SH1ADDL_W	?ICL,ICL:IC;sp	Shift 1 and add unsigned	dest1 = (src1 << 1) + src2
+SH2ADDL_W	?ICL,ICL:IC;sp	Shift 2 and add unsigned	dest1 = (src1 << 2) + src2
+SH3ADDL_W	?ICL,ICL:IC;sp	Shift 3 and add unsigned	dest1 = (src1 << 3) + src2
+
+
+[float_arith]
+# Floating point arithmetic operations
+
+\INIT #include <math.h>
+\INIT #define max(_s1,_s2)	(((_s1) > (_s2)) ? (_s1) : (_s2))
+\INIT #define min(_s1,_s2)	(((_s1) < (_s2)) ? (_s1) : (_s2))
+\INIT #define sqrt(_s)		(sqrt((double)(_s)))
+##\INIT #define abs(_s)		(fabs((double)(_s))) //hongtaoz: FABS_S and FABS_D changed, ABS_W added
+
+# Single precision
+
+FADD_S	?F,F:F;sp	Add spf				dest1.S = src1.S + src2.S
+FSUB_S	?F,F:F;sp	Subtract spf			dest1.S = src1.S - src2.S
+FMPY_S	?F,F:F;sp	Multiply spf			dest1.S = src1.S * src2.S
+FDIV_S	?F,F:F;sp	Divide spf				dest1.S = src1.S / src2.S
+FMPYADD_S	?F,F,F:F;sp	Multiply and add spf		dest1.S = src1.S * src2.S + src3.S
+FMPYADDN_S	?F,F,F:F;sp	Multiply, add and negate spf	dest1.S = -(src1.S * src2.S + src3.S)
+FMPYSUB_S	?F,F,F:F;sp	Multiply and subtract spf	dest1.S = src1.S * src2.S - src3.S
+FMPYRSUB_S	?F,F,F:F;sp	Multiply and reverse sub spf	dest1.S = src3.S - src1.S * src2.S
+FMAX_S	?F,F:F;sp	Maximum value spf			dest1.S = max(src1.S, src2.S)
+FMIN_S	?F,F:F;sp	Minimum value spf			dest1.S = min(src1.S, src2.S)
+FABS_S	?F:F;sp	Absolute value spf		dest1.S = fabsf(src1.S)
+FRCP_S	?F:F;sp	Reciprocal spf			dest1.S = 1.0 / src1.S
+FSQRT_S	?F:F;sp	Square root spf			dest1.S = sqrt(src1.S)
+
+# Double precision
+
+FADD_D	?F,F:F;sp	Add dpf				dest1.D = src1.D + src2.D
+FSUB_D	?F,F:F;sp	Subtract dpf			dest1.D = src1.D - src2.D
+FMPY_D	?F,F:F;sp	Multiply dpf			dest1.D = src1.D * src2.D
+FDIV_D	?F,F:F;sp	Divide dpf				dest1.D = src1.D / src2.D
+FMPYADD_D	?F,F,F:F;sp	Multiply and add dpf		dest1.D = src1.D * src2.D + src3.D
+FMPYADDN_D	?F,F,F:F;sp	Multiply, add and negate dpf	dest1.D = -(src1.D * src2.D + src3.D)
+FMPYSUB_D	?F,F,F:F;sp	Multiply and subtract dpf	dest1.D = src1.D * src2.D - src3.D
+FMPYRSUB_D	?F,F,F:F;sp	Multiply and reverse sub dpf	dest1.D = src3.D - src1.D * src2.D
+FMAX_D	?F,F:F;sp	Maximum value dpf			dest1.D = max(src1.D, src2.D)
+FMIN_D	?F,F:F;sp	Minimum value dpf			dest1.D = min(src1.D, src2.D)
+FABS_D	?F:F;sp	Absolute value dpf		dest1.D = fabs(src1.D)
+ABS_W		?I:I;sp		Absolute value dpf		dest1 = abs(src1)
+FRCP_D	?F:F;sp	Reciprocal dpf			dest1.D = 1.0 / src1.D
+FSQRT_D	?F:F;sp	Square root dpf			dest1.D = sqrt(src1.D)
+
+
+[conversion]
+# Conversion operations
+
+CONVWS	?IL:F;sp	Conv int to single prec float		dest1.S = (float)(signed long)src1
+CONVLWS	?I:F;sp	Conv uint to single prec float	dest1.S = (float)src1
+CONVWD	?IL:F;sp	Conv int to double prec float		dest1.D = (double)(signed long)src1
+CONVLWD	?I:F;sp	Conv uint to double prec float	dest1.D = (double)src1
+CONVSW	?F:I;sp	Conv single prec float to int		dest1 = (signed long)src1.S
+CONVLSW	?F:I;sp	Conv single prec float to uint	dest1 = (unsigned long)src1.S
+CONVDW	?F:I;sp	Conv double prec float to int		dest1 = (signed long)src1.D
+CONVLDW	?F:I;sp	Conv double prec float to uint	dest1 = (unsigned long)src1.D
+CONVSD	?F:F;sp	Conv single to dbl prec float		dest1.D = (double)src1.S
+CONVDS	?F:F;sp	Conv dbl to single prec float		dest1.S = (float)src1.D
+EXTS_B	?I:I;sp	Extend sign byte (pg 18)		dest1 = (signed long)(signed char)src1
+EXTS_H	?I:I;sp	Extend sign half-word (pg 18)		dest1 = (signed long)(signed short)src1
+EXTS_W	?I:I;sp	Extend sign word (pg 18)		dest1 = (signed long)src1
+EXTZ_B		?I:I;sp		Extend zero byte 		dest1 = (unsigned long)(unsigned char)src1
+EXTZ_H		?I:I;sp		Extend zero half-word 		dest1 = (unsigned long)(unsigned short)src1
+EXTZ_W		?I:I;sp		Extend zero word 		dest1 = (unsigned long)src1
+
+
+[move]
+# Move operations
+
+\INIT #define S_PR_FILE		__PD_s_pr_file
+#\INIT #define PV_COVERAGE	(8 * sizeof(ulong))
+\INIT #define PV_COVERAGE	32
+\INIT #define PV_0		__PD_PV_0
+
+# Gather Predicate Bits and store in PV_i
+# Collect appropriate bits from pr file and store temporarily in the PV macro.
+# The calling function then uses the contents of the PV macro.
+\INIT static inline void gather_pr_bits_src1(__PD_OP* op) {
+\INIT 	ulong word = 0;
+\INIT 	ulong mask = 1; 
+\INIT   
+\INIT 	/* OP_SRC0 retrieves src1 */
+\INIT 	ulong pv_index = NUM(OP_SRC0(op)) - PV_0;
+\INIT 	ulong pr_start_index = pv_index * PV_COVERAGE + OP_SRC0(op).offset;
+\INIT 	ulong pr_bit;
+\INIT  
+\INIT 	for (pr_bit = 0; pr_bit < PV_COVERAGE; pr_bit++) {
+\INIT 		if (S_PR_FILE[pr_start_index + pr_bit].reg.pr) {
+\INIT 			word = word | mask;
+\INIT 		}
+\INIT 		mask = mask << 1;
+\INIT 	}
+\INIT 	SREG(OP_SRC0(op)).reg.gpr = word;
+\INIT }
+\INIT 
+
+# Restore Predicate Bits from PV_i
+# Given aggregate of predicate bits 'pv', copy them (using __PD_delay) into
+# the appropriate predicate registers.  The calling function also calls
+# __PD_delay, but that doesn't do anything.
+\INIT static inline void restore_pr_bits(ulong pv, __PD_OP* op) {
+\INIT 	ulong word = pv;
+\INIT 	ulong mask = 1; 
+\INIT  
+\INIT 	ulong pv_index = NUM(OP_DEST0(op)) - PV_0;
+\INIT 	ulong pr_start_index = pv_index * PV_COVERAGE + OP_DEST0(op).offset;
+\INIT 	ulong pr_bit;
+\INIT  
+\INIT 	ubyte lat = LAT(OP_DEST0(op));
+\INIT  
+\INIT 	for (pr_bit = 0; pr_bit < PV_COVERAGE; pr_bit++) {
+\INIT 		ulong bit = word & mask;
+\INIT 		__PD_delay(&bit, &S_PR_FILE[pr_start_index + pr_bit].reg.pr, &S_PR_FILE[pr_start_index + pr_bit].pending, lat);
+\INIT 		word = word >> 1;
+\INIT 	}
+\INIT }
+
+MOVE		?ICL:IC;sp		Move lit, GPR or CR to GPR/CR		dest1 = src1
+MOVEGG		?I:I;sp		Move GPR to GPR			dest1 = src1
+MOVEGC		?I:C;sp		Move GPR to CR			dest1 = src1
+MOVECG		?C:I;sp		Move CR to GPR			dest1 = src1
+MOVEPP		?PL:P;sp	Move PR to PR			dest1 = src1
+MOVEBB		?B:B;sp		Move BTR to BTR			dest1 = src1
+MOVEGF_L	?I:F;sp		Move GPR to lwr half of FPR		dest1.L = src1
+MOVEGF_U	?I:F;sp		Move GPR to upr half of FPR		dest1.U = src1
+MOVEF_S	?F:F;sp		Move FPR to FPR single prec		dest1.S = src1.S /* Warning: inconsistent with the spec */
+MOVEF_D	?F:F;sp		Move FPR to FPR double prec		dest1.D = src1.D /* Warning: inconsistent with the spec */
+MOVEFG_L	?F:I;sp		Move lwr half of FPR to GPR		dest1 = src1.L
+MOVEFG_U	?F:I;sp		Move upr half of FPR to GPR		dest1 = src1.U
+MOVEPG	?P:I;sp		Move predicate to GPR, hibits -> 0	dest1 = src1
+MOVEPG_pv	?I:I;sp		Move PV to GPR		gather_pr_bits_src1(op); dest1 = src1;
+MOVEGP_pv	?I:I;sp		Move GPR to PV		dest1 = src1; restore_pr_bits(dest1, op);
+MOVELGS		?L:I;sp		Move literal to GPR		dest1 = src1
+LDCM		?IL,IL,C:C;sp	Load control reg using mask		dest1 = (src1 & src3) | src2
+
+
+[int_cmpr]
+# Integer compare to register operations
+
+CMPR_W_FALSE	?IL,IL:I;sp		Compare: false to register		dest1 = 0
+CMPR_W_EQ		?IL,IL:I;sp		Compare: = to register			dest1 = src1 == src2
+CMPR_W_LT		?IL,IL:I;sp		Compare: < to register			dest1 = (signed long)src1 < (signed long)src2
+CMPR_W_LEQ		?IL,IL:I;sp		Compare: <= to register			dest1 = (signed long)src1 <= (signed long)src2
+CMPR_W_GT		?IL,IL:I;sp		Compare: > to register			dest1 = (signed long)src1 > (signed long)src2
+CMPR_W_GEQ		?IL,IL:I;sp		Compare: >= to register			dest1 = (signed long)src1 >= (signed long)src2
+CMPR_W_SV		?IL,IL:I;sp		Compare: overflow to register		dest1 = ((signed long)src1 - (signed long)src2 >= 0) != ((signed long)src1 >= (signed long)src2)
+CMPR_W_OD		?IL,IL:I;sp		Compare: odd to register		dest1 = (src1 - src2) & 1
+CMPR_W_TRUE		?IL,IL:I;sp		Compare: true to register		dest1 = 1
+CMPR_W_NEQ		?IL,IL:I;sp		Compare: != to register			dest1 = src1 != src2
+CMPR_W_LLT		?IL,IL:I;sp		Compare: unsignd < to register	dest1 = src1 < src2
+CMPR_W_LLEQ		?IL,IL:I;sp		Compare: unsignd <= to register	dest1 = src1 <= src2
+CMPR_W_LGT		?IL,IL:I;sp		Compare: unsignd > to register	dest1 = src1 > src2
+CMPR_W_LGEQ		?IL,IL:I;sp		Compare: unsignd >= to register	dest1 = src1 >= src2
+CMPR_W_NSV		?IL,IL:I;sp		Compare: !overflow to register	dest1 = ((signed long)src1 - (signed long)src2 >= 0) == ((signed long)src1 >= (signed long)src2)
+CMPR_W_EV		?IL,IL:I;sp		Compare: even to register		dest1 = !((src1 - src2) & 1)
+
+
+[float_cmpr]
+# Floating point compare to register operations
+
+\INIT #include <math.h>
+\INIT #define unordered(_s1,_s2) (isnan(_s1) || isnan(_s2))
+# ? = unordered
+# Truth table: (>, <, =, ?)
+
+# Single precision
+
+FCMPR_S_FALSE	?F,F:I;sp	Compare SPFP: FFFF to register	dest1 = 0
+FCMPR_S_U		?F,F:I;sp	Compare SPFP: FFFT to register	dest1 = unordered(src1.S, src2.S)
+FCMPR_S_EQ		?F,F:I;sp	Compare SPFP: FFTF to register	dest1 = src1.S == src2.S
+FCMPR_S_UEQ		?F,F:I;sp	Compare SPFP: FFTT to register	dest1 = unordered(src1.S, src2.S) || src1.S == src2.S
+FCMPR_S_LT		?F,F:I;sp	Compare SPFP: FTFF to register	dest1 = src1.S < src2.S
+FCMPR_S_ULT		?F,F:I;sp	Compare SPFP: FTFT to register	dest1 = unordered(src1.S, src2.S) || src1.S < src2.S
+FCMPR_S_LEQ		?F,F:I;sp	Compare SPFP: FTTF to register	dest1 = src1.S <= src2.S
+FCMPR_S_ULEQ	?F,F:I;sp	Compare SPFP: FTTT to register	dest1 = unordered(src1.S, src2.S) || src1.S <= src2.S
+FCMPR_S_GT		?F,F:I;sp	Compare SPFP: TFFF to register	dest1 = src1.S > src2.S
+FCMPR_S_UGT		?F,F:I;sp	Compare SPFP: TFFT to register	dest1 = unordered(src1.S, src2.S) || src1.S > src2.S
+FCMPR_S_GEQ		?F,F:I;sp	Compare SPFP: TFTF to register	dest1 = src1.S >= src2.S
+FCMPR_S_UGEQ	?F,F:I;sp	Compare SPFP: TFTT to register	dest1 = unordered(src1.S, src2.S) || src1.S >= src2.S
+FCMPR_S_NUEQ	?F,F:I;sp	Compare SPFP: TTFF to register	dest1 = src1.S < src2.S || src1.S > src2.S
+FCMPR_S_NEQ		?F,F:I;sp	Compare SPFP: TTFT to register	dest1 = src1.S != src2.S
+FCMPR_S_NU		?F,F:I;sp	Compare SPFP: TTTF to register	dest1 = !unordered(src1.S, src2.S)
+FCMPR_S_TRUE	?F,F:I;sp	Compare SPFP: TTTT to register	dest1 = 1
+
+# Double precision
+
+FCMPR_D_FALSE	?F,F:I;sp	Compare DPFP: FFFF to register	dest1 = 0
+FCMPR_D_U		?F,F:I;sp	Compare DPFP: FFFT to register	dest1 = unordered(src1.D, src2.D)
+FCMPR_D_EQ		?F,F:I;sp	Compare DPFP: FFTF to register	dest1 = src1.D == src2.D
+FCMPR_D_UEQ		?F,F:I;sp	Compare DPFP: FFTT to register	dest1 = unordered(src1.D, src2.D) || src1.D == src2.D
+FCMPR_D_LT		?F,F:I;sp	Compare DPFP: FTFF to register	dest1 = src1.D < src2.D
+FCMPR_D_ULT		?F,F:I;sp	Compare DPFP: FTFT to register	dest1 = unordered(src1.D, src2.D) || src1.D < src2.D
+FCMPR_D_LEQ		?F,F:I;sp	Compare DPFP: FTTF to register	dest1 = src1.D <= src2.D
+FCMPR_D_ULEQ	?F,F:I;sp	Compare DPFP: FTTT to register	dest1 = unordered(src1.D, src2.D) || src1.D <= src2.D
+FCMPR_D_GT		?F,F:I;sp	Compare DPFP: TFFF to register	dest1 = src1.D > src2.D
+FCMPR_D_UGT		?F,F:I;sp	Compare DPFP: TFFT to register	dest1 = unordered(src1.D, src2.D) || src1.D > src2.D
+FCMPR_D_GEQ		?F,F:I;sp	Compare DPFP: TFTF to register	dest1 = src1.D >= src2.D
+FCMPR_D_UGEQ	?F,F:I;sp	Compare DPFP: TFTT to register	dest1 = unordered(src1.D, src2.D) || src1.D >= src2.D
+FCMPR_D_NUEQ	?F,F:I;sp	Compare DPFP: TTFF to register	dest1 = src1.D < src2.D || src1.D > src2.D
+FCMPR_D_NEQ		?F,F:I;sp	Compare DPFP: TTFT to register	dest1 = src1.D != src2.D
+FCMPR_D_NU		?F,F:I;sp	Compare DPFP: TTTF to register	dest1 = !unordered(src1.D, src2.D)
+FCMPR_D_TRUE	?F,F:I;sp	Compare DPFP: TTTT to register	dest1 = 1
+
+
+<cmpp_ops.h>
+# Comparison Utilities
+
+\INIT #include <math.h>
+
+# Refer to HPL-PD Atchitecture Manual, page 21 for explanations
+\INIT #define DA_UN(_dest,_pred,_res) ((_dest) = (_pred) && (_res));
+\INIT #define DA_CN(_dest,_pred,_res) if (_pred) (_dest) = (_res);
+\INIT #define DA_ON(_dest,_pred,_res) if ((_pred) &&  (_res)) (_dest) = 1;
+\INIT #define DA_AN(_dest,_pred,_res) if ((_pred) && !(_res)) (_dest) = 0;
+\INIT #define DA_UC(_dest,_pred,_res) ((_dest) = (_pred) && !(_res));
+\INIT #define DA_CC(_dest,_pred,_res) if (_pred) (_dest)  = !(_res);
+\INIT #define DA_OC(_dest,_pred,_res) if ((_pred) && !(_res)) (_dest) = 1;
+\INIT #define DA_AC(_dest,_pred,_res) if ((_pred) &&  (_res)) (_dest) = 0;
+
+# ? = unordered
+# Truth table: (>, <, =, ?)
+\INIT #define unordered(_s1,_s2) (isnan(_s1) || isnan(_s2))
+
+
+[int_cmpp_01]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_FALSE_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: false to pred,$d1a,$d2a		register bool res = 0; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_02]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_FALSE_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: false to pred,$d1a,$d2a		register bool res = 0; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_03]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_EQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: = to pred,$d1a,$d2a		register bool res = src1 == src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_04]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_EQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: = to pred,$d1a,$d2a		register bool res = src1 == src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_05]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_LT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: < to pred,$d1a,$d2a		register bool res = (signed long)src1 < (signed long)src2;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_06]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_LT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: < to pred,$d1a,$d2a		register bool res = (signed long)src1 < (signed long)src2;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_07]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_LEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: <= to pred,$d1a,$d2a		register bool res = (signed long)src1 <= (signed long)src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_08]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_LEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: <= to pred,$d1a,$d2a		register bool res = (signed long)src1 <= (signed long)src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_09]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_GT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: > to pred,$d1a,$d2a		register bool res = (signed long)src1 > (signed long)src2;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_10]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_GT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: > to pred,$d1a,$d2a		register bool res = (signed long)src1 > (signed long)src2;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_11]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_GEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: >= to pred,$d1a,$d2a		register bool res = (signed long)src1 >= (signed long)src2;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_12]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_GEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: >= to pred,$d1a,$d2a		register bool res = (signed long)src1 >= (signed long)src2;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_13]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_SV_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: ovf to pred,$d1a,$d2a		register bool res = ((signed long)src1 - (signed long)src2 >= 0) != ((signed long)src1 >= (signed long)src2);  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_14]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_SV_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: ovf to pred,$d1a,$d2a		register bool res = ((signed long)src1 - (signed long)src2 >= 0) != ((signed long)src1 >= (signed long)src2);  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_15]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_OD_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: odd to pred,$d1a,$d2a		register bool res = (src1 - src2) & 1;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_16]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_OD_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: odd to pred,$d1a,$d2a		register bool res = (src1 - src2) & 1;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_17]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_TRUE_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: true to pred,$d1a,$d2a		register bool res = 1; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_18]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_TRUE_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: true to pred,$d1a,$d2a		register bool res = 1; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_19]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_NEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: != to pred,$d1a,$d2a		register bool res = src1 != src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+[int_cmpp_20]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_NEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: != to pred,$d1a,$d2a		register bool res = src1 != src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_21]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_LLT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns < to pred,$d1a,$d2a		register bool res = src1 < src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_22]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_LLT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns < to pred,$d1a,$d2a		register bool res = src1 < src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_23]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_LLEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns <= to pred,$d1a,$d2a		register bool res = src1 <= src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_24]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_LLEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns <= to pred,$d1a,$d2a		register bool res = src1 <= src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_25]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_LGT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns > to pred,$d1a,$d2a		register bool res = src1 > src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_26]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_LGT_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns > to pred,$d1a,$d2a		register bool res = src1 > src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_27]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_LGEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns >= to pred,$d1a,$d2a		register bool res = src1 >= src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_28]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_LGEQ_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: uns >= to pred,$d1a,$d2a		register bool res = src1 >= src2; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_29]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_NSV_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: !ovf to pred,$d1a,$d2a		register bool res = ((signed long)src1 - (signed long)src2 >= 0) == ((signed long)src1 >= (signed long)src2); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_30]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_NSV_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: !ovf to pred,$d1a,$d2a		register bool res = ((signed long)src1 - (signed long)src2 >= 0) == ((signed long)src1 >= (signed long)src2); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_31]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN
+CMPP_W_EV_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: even to pred,$d1a,$d2a		register bool res = !((src1 - src2) & 1); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[int_cmpp_32]
+# Integer compare to predicate operations
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UC CC OC AC
+CMPP_W_EV_$d1a_$d2a	?IL,IL:P,P;sp	Cmp: even to pred,$d1a,$d2a		register bool res = !((src1 - src2) & 1); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_01]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_FALSE_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FFFF to pr,$d1a,$d2a		register bool res = 0; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_02]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_U_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FFFT to pr,$d1a,$d2a		register bool res = unordered(src1.S, src2.S); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_03]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_EQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FFTF to pr,$d1a,$d2a		register bool res = src1.S == src2.S;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_04]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_UEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FFTT to pr,$d1a,$d2a		register bool res = unordered(src1.S, src2.S) || src1.S == src2.S;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_05]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_LT_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FTFF to pr,$d1a,$d2a		register bool res = src1.S < src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_06]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_ULT_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FTFT to pr,$d1a,$d2a		register bool res = unordered(src1.S, src2.S) || src1.S < src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_07]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_LEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FTTF to pr,$d1a,$d2a		register bool res = src1.S <= src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_08]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_ULEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: FTTT to pr,$d1a,$d2a		register bool res = unordered(src1.S, src2.S) || src1.S <= src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_09]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_GT_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TFFF to pr,$d1a,$d2a		register bool res = src1.S > src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_10]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_UGT_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TFFT to pr,$d1a,$d2a		register bool res = unordered(src1.S, src2.S) || src1.S > src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_11]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_GEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TFTF to pr,$d1a,$d2a		register bool res = src1.S >= src2.S;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_12]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_UGEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TFTT to pr,$d1a,$d2a		register bool res = unordered(src1.S, src2.S) || src1.S >= src2.S;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_13]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_NUEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TTFF to pr,$d1a,$d2a		register bool res = src1.S < src2.S || src1.S > src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_14]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_NEQ_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TTFT to pr,$d1a,$d2a		register bool res = src1.S != src2.S; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_15]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_NU_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TTTF to pr,$d1a,$d2a		register bool res = !unordered(src1.S, src2.S); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_sp_16]
+# Floating point compare to predicate operations
+# Single precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_S_TRUE_$d1a_$d2a	F,F:P,P;sp	Cmp SPF: TTTT to pr,$d1a,$d2a		register bool res = 1; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_01]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_FALSE_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFFF to pr,$d1a,$d2a		register bool res = 0; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_02]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_U_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFFT to pr,$d1a,$d2a		register bool res = unordered(src1.D, src2.D); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_03]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_EQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFTF to pr,$d1a,$d2a		register bool res = src1.D == src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_04]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_UEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFTT to pr,$d1a,$d2a		register bool res = unordered(src1.D, src2.D) || src1.D == src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_05]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_ULEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FTTT to pr,$d1a,$d2a		register bool res = unordered(src1.D, src2.D) || src1.D <= src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_06]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NULEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TFFF to pr,$d1a,$d2a		register bool res = src1.D > src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_07]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_LEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFTF to pr,$d1a,$d2a		register bool res = src1.D <= src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_08]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_GEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFTF to pr,$d1a,$d2a		register bool res = src1.D >= src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_09]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NUGEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FTFF to pr,$d1a,$d2a		register bool res = src1.D < src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_10]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_ULT_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FTFT to pr,$d1a,$d2a		register bool res = unordered(src1.D, src2.D) || src1.D < src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_11]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_LT_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFTF to pr,$d1a,$d2a		register bool res = src1.D < src2.D;  DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_12]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NULT_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TFTF to pr,$d1a,$d2a		register bool res = src1.D >= src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_13]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_UGT_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TFFT to pr,$d1a,$d2a		register bool res = unordered(src1.D, src2.D) || src1.D > src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_14]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NUGT_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FTTF to pr,$d1a,$d2a		register bool res = src1.D <= src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_15]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_GT_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: FFTF to pr,$d1a,$d2a		register bool res = src1.D > src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_16]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_UGEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TFTT to pr,$d1a,$d2a		register bool res = unordered(src1.D, src2.D) || src1.D >= src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_17]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NUEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TTFF to pr,$d1a,$d2a		register bool res = src1.D < src2.D || src1.D > src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_18]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NEQ_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TTFT to pr,$d1a,$d2a		register bool res = src1.D != src2.D; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_19]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_NU_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TTTF to pr,$d1a,$d2a		register bool res = !unordered(src1.D, src2.D); DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+[float_cmpp_dp_20]
+# Floating point compare to predicate operations
+# Double precision
+
+\INIT #include "PD_cmpp_ops.h"
+
+\LOOP d1a UN CN ON AN UC CC OC AC
+\LOOP   d2a UN CN ON AN UC CC OC AC
+FCMPP_D_TRUE_$d1a_$d2a	F,F:P,P;sp	Cmp DPF: TTTT to pr,$d1a,$d2a		register bool res = 1; DA_$d1a(dest1, pred, res); DA_$d2a(dest2, pred, res)
+
+
+<memory_ops.h>
+# Memory tracing operations
+
+\INIT #include "PD_instrument_memops.h"
+
+\INIT #define Mem_B(_src) *(unsigned char  *)(_src)
+\INIT #define Mem_H(_src) *(unsigned short *)(_src)
+\INIT #define Mem_W(_src) *(unsigned long  *)(_src)
+\INIT #define Mem_S(_src) *(float  *)(_src)
+\INIT #define Mem_D(_src) *(double *)(_src)
+
+\INIT #if defined(__PD_TRACE_) || defined(__PD_DINERO_)
+\INIT #  define __load(op, w, s, d, t) __PD_instrument_load (op, __PD_##w, __PD_##s, __PD_##d, __PD_##t);
+\INIT #  define __lds(op, w, s, d, t)  __PD_instrument_lds  (op, __PD_##w, __PD_##s, __PD_##d, __PD_##t);
+\INIT #  define __ldv(op, w, t)        __PD_instrument_ldv  (op, __PD_##w, __PD_##t);
+\INIT #  define __store(op, w, d, t)   __PD_instrument_store(op, __PD_##w, __PD_##d, __PD_##t);
+\INIT #else
+\INIT #  define __load(op, w, s, d, t)	((void)0)
+\INIT #  define __lds(op, w, s, d, t)	((void)0)
+\INIT #  define __ldv(op, w, t)		((void)0)
+\INIT #  define __store(op, w, d, t)	((void)0)
+\INIT #endif /* __PD_TRACE_ || __PD_DINERO_ */
+
+[load_store]
+# Memory operations
+
+\INIT #include "PD_memory_ops.h"
+
+# Integer load
+
+\LOOP w B H W 
+\LOOP  sc V1 C1 C2 C3
+\LOOP    dc V1 C1 C2 C3
+L_$w_$sc_$dc	?I:IC;sp	Load byte/half-word/word GPR or CR		dest1 = Mem_$w(src1); __load(op, $w, $sc, $dc, I); 
+
+\LOOP w B H W 
+\LOOP  sc V1 C1 C2 C3
+\LOOP    dc V1 C1 C2 C3
+L_$w_$sc_$dc	?L:IC;sp	Load byte/half-word/word label 			dest1 = Mem_$w(src1); __load(op, $w, $sc, $dc, L); 
+
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LX_B_$sc_$dc	?I:IC;sp	LX_B extend GPR or CR				dest1 = (signed long)(signed char)Mem_B(src1); __load(op,B,$sc,$dc, I); 
+
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LX_H_$sc_$dc	?I:IC;sp	LX_H extend GPR or CR				dest1 = (signed long)(signed short)Mem_H(src1); __load(op,H,$sc,$dc, I); 
+
+\LOOP w B H W 
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LG_$w_$sc_$dc	?I,I:IC;sp	LG_B base+disp load		dest1 = Mem_$w(src1 + src2); __load(op, $w, $sc, $dc, II); 
+
+\LOOP w B H W 
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LG_$w_$sc_$dc	?L,L:IC;sp	LG_H base+disp load		dest1 = Mem_$w(src1 + src2); __load(op, $w, $sc, $dc, LL); 
+
+\LOOP w B H W 
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LG_$w_$sc_$dc	?I,L:IC;sp	LG_B Lit base+disp load		dest1 = Mem_$w(src1 + src2); __load(op, $w, $sc, $dc, IL);
+
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LGX_B_$sc_$dc	?I,I:IC;sp	LGX_B ext base+disp load	dest1 = (signed long)(signed char)Mem_B(src1 + src2); __load(op, B, $sc, $dc, II); 
+
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LGX_H_$sc_$dc	?I,I:IC;sp	LGX_H ext base+disp load	dest1 = (signed long)(signed short)Mem_H(src1 + src2); __load(op, H, $sc, $dc, II); 
+
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LGX_B_$sc_$dc	?I,L:IC;sp	LGX_B ext Lit base+disp load	dest1 = (signed long)(signed char)Mem_B(src1 + src2); __load(op, B, $sc, $dc, IL); 
+
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+LGX_H_$sc_$dc	?I,L:IC;sp	LGX_H ext Lit base+disp load	dest1 = (signed long)(signed short)Mem_H(src1 + src2); __load(op, H, $sc, $dc, IL); 
+
+# Floating point single/double precision load
+
+\LOOP w S D
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+FL_$w_$sc_$dc	?L:F;sp		Load FPR single/double precision label		dest1.$w = Mem_$w(src1); __load(op, $w, $sc, $dc, L); 
+
+\LOOP w S D
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+FL_$w_$sc_$dc	?I:F;sp		Load FPR single/double precision		dest1.$w = Mem_$w(src1); __load(op, $w, $sc, $dc, I); 
+
+\LOOP w S D
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+FLG_$w_$sc_$dc	?I,I:F;sp	FLG base+disp FPR double prec	dest1.$w = Mem_$w(src1 + src2); __load(op, $w, $sc, $dc, II); 
+
+\LOOP w S D
+\LOOP sc V1 C1 C2 C3
+\LOOP   dc V1 C1 C2 C3
+FLG_$w_$sc_$dc	?I,L:F;sp	FLG base+disp LIT		dest1.$w = Mem_$w(src1 + src2); __load(op, $w, $sc, $dc, IL); 
+
+# Integer store
+
+\LOOP w B H W
+\LOOP   dc V1 C1 C2 C3
+S_$w_$dc		?I,ICL:	Store byte/half-word/word GPR or CR		__store(op, $w, $dc, I); Mem_$w(src1) = src2
+
+\LOOP w B H W
+\LOOP   dc V1 C1 C2 C3
+S_$w_$dc		?L,ICL:	Store byte/half-word/word label 		__store(op, $w, $dc, L); Mem_$w(src1) = src2
+
+\LOOP w B H W
+\LOOP dc V1 C1 C2 C3
+SG_$w_$dc	?I,I,ICL:	SG byte GPR or CR		__store(op, $w, $dc, II); Mem_$w(src1 + src2) = src3;
+
+\LOOP w B H W
+\LOOP dc V1 C1 C2 C3
+SG_$w_$dc	?I,L,ICL:	SG LIT byte GPR or CR		__store(op, $w, $dc, IL); Mem_$w(src1 + src2) = src3;
+
+# Floating point single/double precision store
+
+\LOOP w S D
+\LOOP   dc V1 C1 C2 C3
+FS_$w_$dc		?I,F:		Store FPR single/double precision		__store(op, $w, $dc, I); Mem_$w(src1) = src2.$w
+
+\LOOP w S D
+\LOOP   dc V1 C1 C2 C3
+FSG_$w_$dc		?I,I,F:		FSG base/disp single prec		__store(op,$w,$dc, II); Mem_$w(src1 + src2) = src3.$w
+
+
+\LOOP w S D
+\LOOP   dc V1 C1 C2 C3
+FSG_$w_$dc		?I,L,F:		FSG lit store FPR single prec		__store(op,$w,$dc, IL); Mem_$w(src1 + src2) = src3.$w
+
+
+[postinc_load_store]
+# Memory post-increment load/store operations
+
+\INIT #include "PD_memory_ops.h"
+
+# Integer post-increment load
+
+\LOOP w B H W
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+LI_$w_$sc_$dc	?I,ICL:IC,I;sp	Load byte/half-word/word GPR or CR and increment	__load(op, $w, $sc, $dc, I); dest1 = Mem_$w(src1); dest2 = src1 + src2
+
+# Floating point single/double precision post-increment load
+
+\LOOP w S D
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+FLI_$w_$sc_$dc	?I,ICL:F,I;sp	Load FPR single/double precision and increment		__load(op, $w, $sc, $dc, I); dest1.$w = Mem_$w(src1); dest2 = src1 + src2
+
+# Integer post-increment store
+
+\LOOP w B H W
+\LOOP   dc V1 C1 C2 C3
+SI_$w_$dc		?I,ICL,ICL:I	Store byte/half-word/word GPR or CR and increment	__store(op, $w, $dc, I); Mem_$w(src1) = src2; dest1 = src1 + src3
+
+# Floating point single/double precision post-increment store
+
+\LOOP w S D
+\LOOP   dc V1 C1 C2 C3
+FSI_$w_$dc		?I,F,ICL:I		Store FPR single/double precision and increment		__store(op, $w, $dc, I); Mem_$w(src1) = src2.$w; dest1 = src1 + src3;
+
+
+<disambiguation_ops.h>
+# Disambiguation support functions
+
+# Hash function
+\INIT #define HASH(_p) (((((long) _p) * 0x41C64E6Dl) + 0x3039) & 0x7FFFFFFFl)
+
+\INIT #define LDS_HASH_MASK 0x7F
+\INIT static struct {
+\INIT 	enum {N,B,H,W,S,D} format;
+\INIT 	unsigned long address;
+\INIT } LDS_LOG[LDS_HASH_MASK + 1];
+
+# Lookup by destination register
+\INIT #define LDS_lookup(_dest) ((HASH(_dest)) & LDS_HASH_MASK)
+
+# Update LDS entry
+\INIT #define LDS_update(_dest, _fmt, _addr) {  \
+\INIT 		int i = LDS_lookup(&_dest);	\
+\INIT 		LDS_LOG[i].format = _fmt;	 \
+\INIT 		LDS_LOG[i].address = _addr;  \
+\INIT         }
+
+# Invalidate LDS entry
+\INIT #define LDS_invalidate(_dest) LDS_update(_dest, N, 0)
+
+
+[disambiguation_01]
+# Memory disambiguation operations
+
+\INIT #include "PD_disambiguation_ops.h"
+\INIT #include "PD_memory_ops.h"
+
+\INIT void __PD_initialize_LDS() {
+\INIT 	int i;
+\INIT  	for (i = 0; i < LDS_HASH_MASK + 1; i++) {
+\INIT 		LDS_LOG[i].address = 0;
+\INIT 		LDS_LOG[i].format  = N;
+\INIT 	}
+\INIT }
+
+# Integer speculative load
+
+\LOOP w B H W
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+LDS_$w_$sc_$dc	?I:I;sp		Data-spec load byte/half-word/word GPR		__lds(op, $w, $sc, $dc, I); dest1 = Mem_$w(src1); LDS_update(SREG(OP_DEST0(op)), $w, src1)
+
+# Floating point single/double precision speculative load
+
+\LOOP w S D
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+FLDS_$w_$sc_$dc	?I:F;sp		Data-spec load FPR single/double precision	__lds(op, $w, $sc, $dc, I); dest1.$w = Mem_$w(src1); LDS_update(SREG(OP_DEST0(op)), $w, src1)
+
+
+[disambiguation_02]
+# Memory disambiguation operations
+
+\INIT #include "PD_disambiguation_ops.h"
+\INIT #include "PD_memory_ops.h"
+
+# Integer post-increment speculative load
+
+\LOOP w B H W
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+LDSI_$w_$sc_$dc	?I,ICL:I,I;sp	Data-spec load byte/half-word/word GPR and increment		__lds(op, $w, $sc, $dc, I); dest1 = Mem_$w(src1); dest2 = src1 + src2; LDS_update(SREG(OP_DEST0(op)), $w, src1)
+
+# Floating point single/double precision post-increment speculative load
+
+\LOOP w S D
+\LOOP   sc V1 C1 C2 C3
+\LOOP      dc V1 C1 C2 C3
+FLDSI_$w_$sc_$dc	?I,ICL:F,I;sp	Data-spec load FPR single/double precision and increment	__lds(op, $w, $sc, $dc, I); dest1.$w = Mem_$w(src1); dest2 = src1 + src2; LDS_update(SREG(OP_DEST0(op)), $w, src1)
+
+
+[disambiguation_03]
+# Memory disambiguation operations
+
+\INIT #include "PD_disambiguation_ops.h"
+\INIT #include "PD_memory_ops.h"
+\INIT #include "PD_branch_ops.h"
+
+# Lookup LDS entry (for BRDV operations)
+\INIT static inline int LDS_valid(__PD_reg *dest) {
+\INIT 	int i = LDS_lookup(dest);
+\INIT 	unsigned long src = LDS_LOG[i].address;
+\INIT 	switch (LDS_LOG[i].format) {
+\INIT 		case B: return Mem_B(src) == dest->reg.gpr;
+\INIT 		case H: return Mem_H(src) == dest->reg.gpr;
+\INIT 		case W: return Mem_W(src) == dest->reg.gpr;
+\INIT 		case S: return Mem_S(src) == dest->reg.fpr_S;
+\INIT 		case D: return Mem_D(src) == dest->reg.fpr_D;
+\INIT 		case N: return 0;
+\INIT 	}
+\INIT 	return 0;
+\INIT }
+
+# Integer data-verify load
+
+\LOOP w B H W
+LDV_$w	?I:I;sp	Data-verify load byte/half-word/word GPR		if (Mem_$w(src1) != dest1) { __ldv(op, $w, I); dest1 = Mem_$w(src1); } LDS_invalidate(SREG(OP_DEST0(op)))
+
+# Floating point single/double precision data-verify load
+
+\LOOP w S D
+FLDV_$w	?I:F;sp	Data-verify load single/double precision FPR	if (Mem_$w(src1) != dest1.$w) { __ldv(op, $w, I); dest1.$w = Mem_$w(src1); } LDS_invalidate(SREG(OP_DEST0(op)))
+
+# Integer data-verify branch
+
+BRDVI		?B,I:		Data verify branch GPR		if (LDS_valid(CHKLOCK(SREG(OP_SRC1(op))))) { SET_PC(OP_ID(op), TARGET_ADDRESS(src1), LAT(OP_DEST0(op))); } LDS_invalidate(SREG(OP_DEST0(op)))
+
+# Floating point data-verify branch
+
+BRDVF		?B,F:		Data verify branch FPR		if (LDS_valid(CHKLOCK(SREG(OP_SRC1(op))))) { SET_PC(OP_ID(op), TARGET_ADDRESS(src1), LAT(OP_DEST0(op))); } LDS_invalidate(SREG(OP_DEST0(op)))
+
+
+<branch_ops.h>
+# Branch support function
+
+\INIT static void inline set_pc(ushort id, ulong val, ulong lat)
+\INIT {
+\INIT #ifdef __PD_TRACE_
+\INIT 	if (__PD_parameters->flags & __PD_CFGTRACE) {
+\INIT 		__PD_edge = id;
+\INIT 	}
+\INIT #endif /* __PD_TRACE_ */
+\INIT 	val = val - 1; /* sizeof(__PD_OP); */
+\INIT 	__PD_delay(&val, &__PD_PC_REG, &__PD_macro_file[__PD_PC].pending, lat);
+\INIT }
+
+
+\INIT #define DEC_REG(_r,_p,_l)	{ unsigned long v = (_r) - 1; __PD_delay(&v, &(_r), &(_p), _l); }
+\INIT #define DECN_REG(_r,_p,_n,_l)	{ unsigned long v = (_r) - (_n); __PD_delay(&v, &(_r), &(_p), _l); }
+
+\INIT #define TARGET_ADDRESS(_src)	(_src).addr
+\INIT #define BRANCH_PRED(_src)	(_src).pred
+\INIT #define VECTOR			__PD_vector
+\INIT #define CALLING_VECTOR(_op)	LIT(OP_SRC2(op))
+
+\INIT #define BA_B(_id, _b, _l)	set_pc(_id, TARGET_ADDRESS(_b), _l)
+\INIT #define BA_F(_id, _b, _l)	/* null action */
+\INIT #define BA_LB(_id, _b, _l)	set_pc(_id, _b, _l)
+\INIT #define BA_LF(_id, _b, _l)	/* null action */
+
+\INIT #define SET_PC         set_pc
+\INIT #define delay_call     __PD_delay_call
+\INIT #define LC             __PD_LC_REG
+\INIT #define PLC            CAST(lc_file)[lc_reg_num].pending
+\INIT #define RRB            __PD_RRB_REG
+\INIT #define PRRB           __PD_macro_file[__PD_RRB].pending
+\INIT #define VRRB           __PD_VRRB_REG
+\INIT #define PVRRB          __PD_macro_file[__PD_VRRB].pending
+\INIT #define ESC            __PD_ESC_REG
+\INIT #define PESC           CAST(esc_file)[esc_reg_num].pending
+
+\INIT #ifdef __PD_CACHE_
+\INIT #  include "PD_cache.h"
+\INIT #  define  handle_branch      __PD_handle_branch
+\INIT #endif /* __PD_CACHE_ */
+
+[branch]
+# Branch operations
+
+\INIT #include "PD_branch_ops.h"
+
+\INIT #ifdef __PD_DINERO_
+\INIT   static int skip;
+\INIT #endif /* __PD_DINERO_ */
+
+\INIT /* Warning: inconsistent with the spec */
+PBR	?IL,L:B;sp	Prepare branch			TARGET_ADDRESS(dest1) = src1; BRANCH_PRED(dest1) = src2
+
+# Branch
+BRU	?B:		Unconditional branch				#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, TARGET_ADDRESS(src1), 1);};#endif //__PD_DINERO_;SET_PC(OP_ID(op), TARGET_ADDRESS(src1), LAT(OP_DEST0(op)))
+BRU	?L:		Unconditional branch				#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, src1, 1);};#endif //__PD_DINERO_;SET_PC(OP_ID(op), src1, LAT(OP_DEST0(op)))
+BRCT	?B,P:		Conditional branch on pred=1			#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, TARGET_ADDRESS(src1), src2);};#endif //__PD_DINERO_;if (src2) SET_PC(OP_ID(op), TARGET_ADDRESS(src1), LAT(OP_DEST0(op)))
+BRCT	?L,P:		Conditional branch on pred=1			#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, src1, src2);};#endif //__PD_DINERO_;if (src2) SET_PC(OP_ID(op), src1, LAT(OP_DEST0(op)))
+BRCF	?B,P:		Conditional branch on pred=0			#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, TARGET_ADDRESS(src1), !src2);};#endif //__PD_DINERO_;if (!src2) SET_PC(OP_ID(op), TARGET_ADDRESS(src1), LAT(OP_DEST0(op)))
+BRCF	?L,P:		Conditional branch on pred=0			#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, src1, !src2);};#endif //__PD_DINERO_;if (!src2) SET_PC(OP_ID(op), src1, LAT(OP_DEST0(op)))
+BRLC	?B:		Branch on zero loop count decr		#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, TARGET_ADDRESS(src1), (LC>0));};#endif //__PD_DINERO_;if (LC > 0) { SET_PC(OP_ID(op), TARGET_ADDRESS(src1), LAT(OP_DEST0(op))); DEC_REG(LC, PLC, LAT(OP_DEST0(op))); }
+BRLC	?L:		Branch on zero loop count decr		#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, (src1), (LC>0));};#endif //__PD_DINERO_;if (LC > 0) { SET_PC(OP_ID(op), src1, LAT(OP_DEST0(op))); DEC_REG(LC, PLC, LAT(OP_DEST0(op))); }
+BRL	?B,L:B	Branch and link(modified)			#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, TARGET_ADDRESS(src1), 1);};#endif //__PD_DINERO_;TARGET_ADDRESS(dest1) = src2; BRANCH_PRED(dest1) = 0; delay_call((VECTOR)TARGET_ADDRESS(src1), (VECTOR)CALLING_VECTOR(op), /* &SREG(OP_DEST0(op)), */ LAT(OP_DEST0(op)))
+BRL	?L,L:B	Branch and link(modified)			#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, (src1), 1);};#endif //__PD_DINERO_;TARGET_ADDRESS(dest1) = src2; BRANCH_PRED(dest1) = 0; delay_call((VECTOR)(src1), (VECTOR)CALLING_VECTOR(op), /* &SREG(OP_DEST0(op)), */ LAT(OP_DEST0(op)))
+RTS	?B:		Return (NOT ident to BRU: hack)		#ifdef __PD_DINERO_ //;if (!skip) {handle_branch(op, TARGET_ADDRESS(CHKLOCK(SREG(OP_SRC0(op)))->reg.btr), 1);};#endif //__PD_DINERO_; delay_call((VECTOR)op, __PD_epilogue, /* CHKLOCK(SREG(OP_SRC0(op)), */ LAT(OP_DEST0(op)))
+
+[loop_branch]
+# Branch loop support operations
+
+\INIT #include "PD_branch_ops.h"
+
+# For loop support
+
+\LOOP cd B F
+\LOOP   rd B F
+\LOOP      sd B F
+BRF_$cd_$rd_$sd	B,C,C:P,C,C	For loop support (page 41)	#ifdef __PD_DINERO_ //;handle_branch(op, TARGET_ADDRESS(src1), ((signed)(src2)>0)?('$cd'=='B'):(((signed)(src3)>0)?('$rd'=='B'):('$sd'=='B')));#endif //__PD_DINERO_;if (((signed)(src2)) > 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 1; dest2 = src2 - 1; dest3 = src3; BA_$cd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else if (((signed)(src3)) > 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; dest2 = src2; dest3 = src3 - 1; BA_$rd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else { if (src3 == 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; dest2 = src2; dest3 = src3 - 1; } BA_$sd(OP_ID(op), src1, LAT(OP_DEST3(op))); }
+
+\LOOP cd B F
+\LOOP   rd B F
+\LOOP      sd B F
+BRF_$cd_$rd_$sd	L,C,C:P,C,C	For loop support (page 41)	#ifdef __PD_DINERO_ //;handle_branch(op, (src1), ((signed)(src2)>0)?('$cd'=='B'):(((signed)(src3)>0)?('$rd'=='B'):('$sd'=='B')));#endif //__PD_DINERO_;if (((signed)(src2)) > 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 1; dest2 = src2 - 1; dest3 = src3; BA_L$cd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else if (((signed)(src3)) > 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; dest2 = src2; dest3 = src3 - 1; BA_L$rd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else { if (src3 == 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; dest2 = src2; dest3 = src3 - 1; } BA_L$sd(OP_ID(op), src1, LAT(OP_DEST3(op))); }
+# While loop support
+
+\LOOP cd B F
+\LOOP   rd B F
+\LOOP     sd B F
+BRW_$cd_$rd_$sd	B,P,P:P		While loop support (page 41)	#ifdef __PD_DINERO_ //;handle_branch(op, TARGET_ADDRESS(src1), (((signed)(src2)>0) && ((signed)(src3)>0))?('$cd'=='B'):((ESC>0)?('$rd'=='B'):('$sd'=='B')));#endif //__PD_DINERO_;if (src2 && src3) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 1; BA_$cd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else if (ESC > 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; DEC_REG(ESC, PESC, LAT(OP_DEST1(op))); BA_$rd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else { if (ESC == 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; DEC_REG(ESC, PESC, LAT(OP_DEST1(op))); } BA_$sd(OP_ID(op), src1, LAT(OP_DEST3(op))); }
+
+\LOOP cd B F
+\LOOP   rd B F
+\LOOP     sd B F
+BRW_$cd_$rd_$sd	L,P,P:P		While loop support (page 41)	#ifdef __PD_DINERO_ //;handle_branch(op, (src1), (((signed)(src2)>0) && ((signed)(src3)>0))?('$cd'=='B'):((ESC>0)?('$rd'=='B'):('$sd'=='B')));#endif //__PD_DINERO_;if (src2 && src3) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 1; BA_L$cd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else if (ESC > 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; DEC_REG(ESC, PESC, LAT(OP_DEST1(op))); BA_L$rd(OP_ID(op), src1, LAT(OP_DEST3(op))); } else { if (ESC == 0) { DEC_REG(RRB, PRRB, LAT(OP_DEST1(op))); DECN_REG(VRRB, PVRRB, __PD_VECTOR_LENGTH, LAT(OP_DEST1(op))); dest1 = 0; DEC_REG(ESC, PESC, LAT(OP_DEST1(op))); } BA_L$sd(OP_ID(op), src1, LAT(OP_DEST3(op))); }
+
+
+[predicate]
+# Predicate operations
+
+\INIT #include <stdlib.h>
+\INIT #define push(v)     *__PD_hack_stack++ = v
+\INIT #define pop()       *(--__PD_hack_stack)
+\INIT #define PR_FILE     __PD_REGISTERS[__PD_PR_FILE]
+\INIT #define PR_NUM      __PD_PR_NUM
+\INIT #define PR_STAT     __PD_PR_FILE_S_SIZE
+\INIT #define PDREG       __PD_REG
+\INIT #define PR_FILE_ROT __PD_REGISTERS[__PD_PR_FILE_ROT]
+\INIT #define PR_ROT_SIZE __PD_PR_FILE_R_SIZE
+
+\INIT #define S_PR_FILE		__PD_s_pr_file
+\INIT #define R_PR_FILE		__PD_r_pr_file
+\INIT #define T_PR_FILE		__PD_s_pr_file
+\INIT #define NUM_S_PR		__PD_reginfo->s_pr_file_size
+\INIT #define NUM_R_PR		__PD_reginfo->r_pr_file_size
+\INIT #define NUM_T_PR		(__PD_reginfo->s_pr_file_size + __PD_reginfo->r_pr_file_size)
+\INIT #define PV_COVERAGE	(8 * sizeof(ulong))
+\INIT #define PV_0		__PD_PV_0
+
+PRED_CLEAR	?:P		Clear predicate				dest1 = 0
+PRED_SET	?:P		Set predicate				dest1 = 1
+PRED_AND	?P,P:P	And predicate				dest1 = src1 && src2
+PRED_COMPL	?P:P		Complement predicate			dest1 = !src1
+
+#note: we now clear the predicate directly instead of using the __PD_delay because the number of virtual predicate is too big and overflow the queue.
+PRED_CLEAR_ALL		?:P	Clear all predicates		int i; for (i = 0; i < NUM_T_PR; i++) { S_PR_FILE[i].reg.pr = 0;}
+PRED_CLEAR_ALL_STATIC	?:P	Clear all static predicates	int i; for (i = 0; i < NUM_S_PR; i++) { S_PR_FILE[i].reg.pr = 0; }
+PRED_CLEAR_ALL_ROTATING	?:P	Clear all rotating predicates	int i; for (i = 0; i < NUM_R_PR; i++) { R_PR_FILE[i].reg.pr = 0; }
+#PRED_CLEAR_ALL		?:P	Clear all predicates		int i; for (i = 0; i < NUM_T_PR; i++) { __PD_delay(&__PD_PRED_F_REG, &S_PR_FILE[i].reg.pr, LAT(OP_DEST0(op))); }
+#PRED_CLEAR_ALL_STATIC	?:P	Clear all static predicates	int i; for (i = 0; i < NUM_S_PR; i++) { __PD_delay(&__PD_PRED_F_REG, &S_PR_FILE[i].reg.pr, LAT(OP_DEST0(op))); }
+#PRED_CLEAR_ALL_ROTATING	?:P	Clear all rotating predicates	int i; for (i = 0; i < NUM_R_PR; i++) { __PD_delay(&__PD_PRED_F_REG, &R_PR_FILE[i].reg.pr, LAT(OP_DEST0(op))); }
+
+#PRED_LOAD_ALL_STATIC	?I:P		Load predicates (hack)		PDREG *save_area = (PDREG *)pop(); memcpy(PR_FILE, save_area, PR_STAT * sizeof(PDREG)); free(save_area)
+#PRED_LOAD_ALL_ROTATING	?I:P		Load predicates (hack)		PDREG *save_area = (PDREG *)pop(); memcpy(PR_FILE_ROT, save_area, (PR_ROT_SIZE) * sizeof(PDREG)); free(save_area)
+#PRED_STORE_ALL	?I,P:		Store predicates (hack)		PDREG *save_area = (PDREG *)malloc(PR_NUM * sizeof(PDREG)); memcpy(save_area, PR_FILE, PR_NUM * sizeof(PDREG)); push((unsigned long)save_area)
+#PRED_STORE_ALL_STATIC	?I,P:		Store predicates (hack)		PDREG *save_area = (PDREG *)malloc(PR_STAT * sizeof(PDREG)); memcpy(save_area, PR_FILE, PR_STAT * sizeof(PDREG)); push((unsigned long)save_area)
+#PRED_STORE_ALL_ROTATING	?I,P:		Store predicates (hack)		PDREG *save_area = (PDREG *)malloc((PR_ROT_SIZE) * sizeof(PDREG)); memcpy(save_area, PR_FILE_ROT, (PR_ROT_SIZE) * sizeof(PDREG)); push((unsigned long)save_area)
+
+[save_restore]
+#save_restore operations
+
+\INIT #include "PD_memory_ops.h"
+
+\INIT #define S_PR_FILE		__PD_s_pr_file
+#\INIT #define PV_COVERAGE	(8 * sizeof(ulong))
+\INIT #define PV_COVERAGE	32
+\INIT #define PV_0		__PD_PV_0
+
+# Gather Predicate Bits and store in PV_i
+# Collect appropriate bits from pr file and store temporarily in the PV macro.
+# The calling function then stores the contents of the PV macro to memory.
+\INIT static inline void gather_pr_bits_src3(__PD_OP* op) {
+\INIT 	ulong word = 0;
+\INIT 	ulong mask = 1; 
+\INIT   
+\INIT 	/* OP_SRC2 retrieves src3 */
+\INIT 	ulong pv_index = NUM(OP_SRC2(op)) - PV_0;
+\INIT 	ulong pr_start_index = pv_index * PV_COVERAGE + OP_SRC2(op).offset;
+\INIT 	ulong pr_bit;
+\INIT  
+\INIT 	for (pr_bit = 0; pr_bit < PV_COVERAGE; pr_bit++) {
+\INIT 		if (S_PR_FILE[pr_start_index + pr_bit].reg.pr) {
+\INIT 			word = word | mask;
+\INIT 		}
+\INIT 		mask = mask << 1;
+\INIT 	}
+\INIT 	SREG(OP_SRC2(op)).reg.gpr = word;
+\INIT }
+\INIT 
+# Need a separate function for src2, there doesn't seem to be a better way to
+# do this without modifying gen_functions
+\INIT static inline void gather_pr_bits_src2(__PD_OP* op) {
+\INIT 	ulong word = 0;
+\INIT 	ulong mask = 1; 
+\INIT   
+\INIT 	/* OP_SRC1 retrieves src2 */
+\INIT 	ulong pv_index = NUM(OP_SRC1(op)) - PV_0;
+\INIT 	ulong pr_start_index = pv_index * PV_COVERAGE + OP_SRC1(op).offset;
+\INIT 	ulong pr_bit;
+\INIT  
+\INIT 	for (pr_bit = 0; pr_bit < PV_COVERAGE; pr_bit++) {
+\INIT 		if (S_PR_FILE[pr_start_index + pr_bit].reg.pr) {
+\INIT 			word = word | mask;
+\INIT 		}
+\INIT 		mask = mask << 1;
+\INIT 	}
+\INIT 	SREG(OP_SRC1(op)).reg.gpr = word;
+\INIT }
+
+# Restore Predicate Bits from PV_i
+# Given aggregate of predicate bits 'pv', copy them (using __PD_delay) into
+# the appropriate predicate registers.  The calling function also calls
+# __PD_delay, but that doesn't do anything.
+\INIT static inline void restore_pr_bits(ulong pv, __PD_OP* op) {
+\INIT 	ulong word = pv;
+\INIT 	ulong mask = 1; 
+\INIT  
+\INIT 	ulong pv_index = NUM(OP_DEST0(op)) - PV_0;
+\INIT 	ulong pr_start_index = pv_index * PV_COVERAGE + OP_DEST0(op).offset;
+\INIT 	ulong pr_bit;
+\INIT  
+\INIT 	ubyte lat = LAT(OP_DEST0(op));
+\INIT  
+\INIT 	for (pr_bit = 0; pr_bit < PV_COVERAGE; pr_bit++) {
+\INIT 		ulong bit = word & mask;
+\INIT 		__PD_delay(&bit, &S_PR_FILE[pr_start_index + pr_bit].reg.pr, &S_PR_FILE[pr_start_index + pr_bit].pending, lat);
+\INIT 		word = word >> 1;
+\INIT 	}
+\INIT }
+
+
+SAVE		?I,I:		Save a GPR to memory		Mem_W(src1) = src2;
+RESTORE		?I:I;sp		Restore a GPR from memory	dest1 = Mem_W(src1);
+
+
+SAVEG		?I,I,I:		Save a GPR to memory		Mem_W(src1 + src2) = src3;
+RESTOREG	?I,I:I;sp	Restore a GPR from memory	dest1 = Mem_W(src1 + src2);
+SAVEG		?I,L,I:		Save a GPR to memory		Mem_W(src1 + src2) = src3;
+RESTOREG	?I,L:I;sp	Restore a GPR from memory	dest1 = Mem_W(src1 + src2);
+
+FSAVE_S		?I,F:		Save a FPR to memory		Mem_S(src1) = (float)src2.S;
+FRESTORE_S	?I:F;sp		Restore a FPR from memory	dest1.S = Mem_S(src1);
+FSAVE_D		?I,F:		Save a FPR to memory		Mem_D(src1) = (double)src2.D;
+FRESTORE_D	?I:F;sp		Restore a FPR from memory	dest1.D = Mem_D(src1);
+
+FSAVEG_S	?I,L,F:		Save a FPR to memory		Mem_S(src1 + src2) = (float)src3.S;
+FSAVEG_S	?I,I,F:		Save a FPR to memory		Mem_S(src1 + src2) = (float)src3.S;
+FRESTOREG_S	?I,L:F;sp	Restore a FPR from memory	dest1.S = Mem_S(src1 + src2);
+FRESTOREG_S	?I,I:F;sp	Restore a FPR from memory	dest1.S = Mem_S(src1 + src2);
+FSAVEG_D	?I,L,F:		Save a FPR to memory		Mem_D(src1 + src2) = (double)src3.D;
+FSAVEG_D	?I,I,F:		Save a FPR to memory		Mem_D(src1 + src2) = (double)src3.D;
+FRESTOREG_D	?I,L:F;sp	Restore a FPR from memory	dest1.D = Mem_D(src1 + src2);
+FRESTOREG_D	?I,I:F;sp	Restore a FPR from memory	dest1.D = Mem_D(src1 + src2);
+
+BSAVE		?I,B:		Save a BTR to memory		Mem_W(src1) = src2.addr;
+BRESTORE	?I:B;sp		Restore a BTR from memory	dest1.addr = Mem_W(src1);
+
+BSAVEG		?I,L,B:		Save a BTR to memory		Mem_W(src1 + src2) = src3.addr;
+BRESTOREG	?I,L:B;sp	Restore a BTR from memory	dest1.addr = Mem_W(src1 + src2);
+BSAVEG		?I,I,B:		Save a BTR to memory		Mem_W(src1 + src2) = src3.addr;
+BRESTOREG	?I,I:B;sp	Restore a BTR from memory	dest1.addr = Mem_W(src1 + src2);
+
+PSAVE		?I,P:		Save a PR to memory		Mem_W(src1) = src2;
+PSAVE_pv	?I,I:		Save a PV to memory		gather_pr_bits_src2(op); Mem_W(src1) = src2;
+PRESTORE	?I:P;sp		Restore a PR from memory	dest1 = Mem_W(src1);
+PRESTORE_pv	?I:I;sp		Restore a PV from memory	dest1 = Mem_W(src1); restore_pr_bits(dest1, op);
+
+PSAVEG		?I,IL,P:	Save a PR to memory		Mem_W(src1 + src2) = src3;
+PSAVEG_pv	?I,IL,I:	Save a PV to memory		gather_pr_bits_src3(op); Mem_W(src1 + src2) = src3;
+PRESTOREG	?I,IL:P;sp	Restore a PR from memory	dest1 = Mem_W(src1 + src2);
+PRESTOREG_pv	?I,IL:I;sp	Restore a PV from memory	dest1 = Mem_W(src1 + src2); restore_pr_bits(dest1, op);
+
+MOVEGBP		?I,IL:P;sp	Move a GPR bit to PR		unsigned int mask = 1; mask = mask << src2; dest1 = (src1 & mask) >> src2;
+MOVEGBGT	?I,IL:I;sp	Move a GPR bit to GPR spec.tag	unsigned int mask = 1; mask = mask << src2; dest1 = (src1 & mask) >> src2;
+MOVEGBFT	?I,IL:F;sp	Move a GPR bit to FPR spec.tag	unsigned int mask = 1; mask = mask << src2; dest1.S = (src1 & mask) >> src2;
+MOVEGBPT	?I,IL:P;sp	Move a GPR bit to PR spec.tag	unsigned int mask = 1; mask = mask << src2; dest1 = (src1 & mask) >> src2;
+MOVEGCM		?IL,IL,C:C	Move a GPR to a CR using mask	dest1 = (src1 & src2) | (src3 & ~src2);
+
+[vec_int_arith]
+### SLARSEN: Vector instructions
+# Vector integer arithmetic operations
+
+VADD_W		VM?IL,IL,I:I;sp	Vector Add				vdest1 = (signed long)vsrc1 + (signed long)vsrc2
+VADDL_W		VM?IL,IL,I:I;sp	Vector Add unsigned		vdest1 = (unsigned long)vsrc1 + (unsigned long)vsrc2
+VSUB_W		VM?IL,IL,I:I;sp	Vector Subtract			vdest1 = (signed long)vsrc1 - (signed long)vsrc2
+VSUBL_W		VM?IL,IL,I:I;sp	Vector Subtract unsigned	vdest1 = (unsigned long)vsrc1 - (unsigned long)vsrc2
+VMPY_W		VM?IL,IL,I:I;sp	Vector Multiply			vdest1 = (signed long)vsrc1 * (signed long)vsrc2
+VMPYL_W		VM?IL,IL,I:I;sp	Vector Multiply unsigned	vdest1 = (unsigned long)vsrc1 * (unsigned long)vsrc2
+VDIV_W		VM?IL,IL,I:I;sp	Vector Divide			vdest1 = (signed long)vsrc1 / (signed long)vsrc2
+VDIVL_W		VM?IL,IL,I:I;sp	Vector Divide unsigned		vdest1 = (unsigned long)vsrc1 / (unsigned long)vsrc2
+VREM_W		VM?IL,IL,I:I;sp	Vector Remainder			vdest1 = (signed long)vsrc1 % (signed long)vsrc2
+VREML_W		VM?IL,IL,I:I;sp	Vector Remainder unsigned	vdest1 = (unsigned long)vsrc1 % (unsigned long)vsrc2
+VMIN_W		VM?IL,IL,I:I;sp	Vector Min				vdest1 = vsrc1 < vsrc2 ? vsrc1 : vsrc2
+VMAX_W		VM?IL,IL,I:I;sp	Vector Max				vdest1 = vsrc1 > vsrc2 ? vsrc1 : vsrc2
+
+
+[vec_int_logic]
+# Vector integer logical operations
+
+VAND_W		VM?IL,IL,I:I;sp	Vector And				vdest1 = vsrc1 & vsrc2
+VOR_W			VM?IL,IL,I:I;sp	Vector Or				vdest1 = vsrc1 | vsrc2
+#VXOR_W		VM?IL,IL,I:I;sp	Vector Exclusive Or		vdest1 = vsrc1 ^ vsrc2
+
+
+#[vec_int_shift]
+## Vector integer shift operations
+
+#VSHL_W	VM?IL,IL,I:I;sp	Vector Shift left				vdest1 = vsrc1 << vsrc2
+#VSHR_W	VM?IL,IL,I:I;sp	Vector Shift right			vdest1 = vsrc1 >> vsrc2
+#VSHRA_W	VM?IL,IL,I:I;sp	Vector Shift right arithmetic		vdest1 = ((signed long)vsrc1) >> vsrc2
+
+
+[vec_float_arith]
+# Vector floating point arithmetic operations
+
+\INIT #include <math.h>
+\INIT #define max(_s1,_s2)	(((_s1) > (_s2)) ? (_s1) : (_s2))
+\INIT #define min(_s1,_s2)	(((_s1) < (_s2)) ? (_s1) : (_s2))
+\INIT #define sqrt(_s)		(sqrt((double)(_s)))
+\INIT #define abs(_s)		(fabs((double)(_s)))
+
+# Single precision
+
+VFADD_S		VM?F,F,I:F;sp	Vector Add spf			vdest1.S = vsrc1.S + vsrc2.S
+VFSUB_S		VM?F,F,I:F;sp	Vector Subtract spf		vdest1.S = vsrc1.S - vsrc2.S
+VFMPY_S		VM?F,F,I:F;sp	Vector Multiply spf		vdest1.S = vsrc1.S * vsrc2.S
+VFDIV_S		VM?F,F,I:F;sp	Vector Divide spf			vdest1.S = vsrc1.S / vsrc2.S
+VFMAX_S		VM?F,F,I:F;sp	Vector Maximum value spf	vdest1.S = max(vsrc1.S, vsrc2.S)
+VFMIN_S		VM?F,F,I:F;sp	Vector Minimum value spf	vdest1.S = min(vsrc1.S, vsrc2.S)
+VFABS_S		VM?F,I:F;sp		Vector Absolute value spf	vdest1.S = abs(vsrc1.S)
+VFSQRT_S		VM?F,I:F;sp		Vector Square root spf		vdest1.S = sqrt(vsrc1.S)
+
+# Double precision
+
+VFADD_D		VM?F,F,I:F;sp	Vector Add dpf			vdest1.D = vsrc1.D + vsrc2.D
+VFSUB_D		VM?F,F,I:F;sp	Vector Subtract dpf		vdest1.D = vsrc1.D - vsrc2.D
+VFMPY_D		VM?F,F,I:F;sp	Vector Multiply dpf		vdest1.D = vsrc1.D * vsrc2.D
+VFDIV_D		VM?F,F,I:F;sp	Vector Divide dpf			vdest1.D = vsrc1.D / vsrc2.D
+VFMAX_D		VM?F,F,I:F;sp	Vector Maximum value dpf	vdest1.D = max(vsrc1.D, vsrc2.D)
+VFMIN_D		VM?F,F,I:F;sp	Vector Minimum value dpf	vdest1.D = min(vsrc1.D, vsrc2.D)
+VFABS_D		VM?F,I:F;sp		Vector Absolute value dpf	vdest1.D = abs(vsrc1.D)
+VFSQRT_D		VM?F,I:F;sp		Vector Square root dpf		vdest1.D = sqrt(vsrc1.D)
+
+
+[vec_conversion]
+# Vector conversion operations
+
+VCONVWS		VM?IL,I:F;sp	Conv int to single prec float		vdest1.S = (float)(signed long)vsrc1
+VCONVLWS		VM?IL,I:F;sp	Conv uint to single prec float	vdest1.S = (float)vsrc1
+VCONVWD		VM?IL,I:F;sp	Conv int to double prec float		vdest1.D = (double)(signed long)vsrc1
+VCONVLWD		VM?IL,I:F;sp	Conv uint to double prec float	vdest1.D = (double)vsrc1
+VCONVSW		VM?F,I:I;sp		Conv single prec float to int		vdest1 = (signed long)vsrc1.S
+VCONVLSW		VM?F,I:I;sp		Conv single prec float to uint	vdest1 = (unsigned long)vsrc1.S
+VCONVDW		VM?F,I:I;sp		Conv double prec float to int		vdest1 = (signed long)vsrc1.D
+VCONVLDW		VM?F,I:I;sp		Conv double prec float to uint	vdest1 = (unsigned long)vsrc1.D
+VCONVSD		VM?F,I:F;sp		Conv single to dbl prec float		vdest1.D = (double)vsrc1.S
+VCONVDS		VM?F,I:F;sp		Conv dbl to single prec float		vdest1.S = (float)vsrc1.D
+VEXTS_B		VM?I,I:I;sp		Extend sign byte				vdest1 = (signed long)(signed char)vsrc1
+VEXTS_H		VM?I,I:I;sp		Extend sign half-word			vdest1 = (signed long)(signed short)vsrc1
+
+
+[vec_move]
+# Vector move operations
+
+VMOVE			VM?IL,I:I;sp	Move lit, GPR or CR to GPR/CR	vdest1 = vsrc1
+VMOVEF_S		VM?F,I:F;sp	Move FPR to FPR single prec	vdest1.S = vsrc1.S
+VMOVEF_D		VM?F,I:F;sp	Move FPR to FPR double prec	vdest1.D = vsrc1.D
+
+# Intercluster moves
+
+VMOVEGG			V?I:I;sp	Move VIR to VIR			vdest1 = vsrc1
+VMOVEFF_S		V?F:F;sp	Move VFR to VFR single prec	vdest1.S = vsrc1.S
+VMOVEFF_D		V?F:F;sp	Move VFR to VFR double prec	vdest1.D = vsrc1.D
+VMOVEMM			?I:I;sp		Move VMR to VMR			dest1 = src1
+
+\INIT #define __scalar_vector_move_int(op, index) \
+\INIT    dest[0].reg.gpr = CHKLOCK(SREG(OP_SRC0(op)))->reg.gpr; \
+\INIT    __PD_delay(&dest[0].reg.gpr, &VREG(OP_DEST0(op), index).reg.gpr, &VREG(OP_DEST0(op), index).pending, LAT(OP_DEST0(op)));
+
+\INIT #define __scalar_vector_move_fpr_S(op, index) \
+\INIT    dest[0].reg.fpr_S = CHKLOCK(SREG(OP_SRC0(op)))->reg.fpr_S; \
+\INIT    __PD_delay(&dest[0].reg.fpr_S, &VREG(OP_DEST0(op), index).reg.fpr_S, &VREG(OP_DEST0(op), index).pending, LAT(OP_DEST0(op)));
+
+\INIT #define __scalar_vector_move_fpr_D(op, index) \
+\INIT    dest[0].reg.fpr_D = CHKLOCK(SREG(OP_SRC0(op)))->reg.fpr_D; \
+\INIT    __PD_delay2x(&dest[0].reg.fpr_D, &VREG(OP_DEST0(op), index).reg.fpr_D, &VREG(OP_DEST0(op), index).pending, LAT(OP_DEST0(op)));
+
+VSPLAT			VM?IL,I:I;sp		Move scalar to all vector elements	vdest1 = src1
+VFSPLAT_S		VM?F,I:F;sp		Move scalar to all vector elements	vdest1.S = src1.S
+VFSPLAT_D		VM?F,I:F;sp		Move scalar to all vector elements	vdest1.D = src1.D
+
+VSMOVE		?I,IL:I;sp		Vector to Scalar INT regfile move	dest1 = CHKLOCK(VREG(OP_SRC0(op), src2))->reg.gpr
+SVMOVE		C?IL,IL:I;sp	Scalar to Vector INT regfile move	__scalar_vector_move_int(op, src2)
+
+\LOOP w S D
+VSFMOVE_$w		?F,IL:F;sp		Vector to Scalar FLT regfile move	dest1.$w = CHKLOCK(VREG(OP_SRC0(op), src2))->reg.fpr_$w
+
+\LOOP w S D
+SVFMOVE_$w		C?F,IL:F;sp		Scalar to Vector FLT regfile move	__scalar_vector_move_fpr_$w(op, src2)
+
+
+[vec_load_store]
+# Vector memory operations
+
+\INIT #include "PD_memory_ops.h"
+
+\INIT #define VMem_B(_src, i) *((unsigned char  *)(_src) + i)
+\INIT #define VMem_H(_src, i) *((unsigned short *)(_src) + i)
+\INIT #define VMem_W(_src, i) *((unsigned long  *)(_src) + i)
+\INIT #define VMem_S(_src, i) *((float  *)(_src) + i)
+\INIT #define VMem_D(_src, i) *((double *)(_src) + i)
+
+# standard vectory memory operations
+
+\LOOP w B H W 
+VL_$w_C1_C1		VM?I,I:I;sp	Vector Load byte/half/word		__load(op, $w, C1, C1, I); vdest1 = VMem_$w(src1, @)
+
+\LOOP w S D
+VFL_$w_C1_C1	VM?I,I:F;sp	Vector Load FPR single/double 	__load(op, $w, C1, C1, I); vdest1.$w = VMem_$w(src1, @)
+
+\LOOP w B H W
+VS_$w_C1		VM?I,IL,I:	Vector Store byte/half/word 		__store(op, $w, C1, I); VMem_$w(src1, @) = vsrc2
+
+\LOOP w S D
+VFS_$w_C1		VM?I,F,I:	Vector Store FPR single/double	__store(op, $w, C1, I); VMem_$w(src1, @) = vsrc2.$w
+
+# base+offset vector memory operations
+
+\LOOP w B H W 
+VLG_$w_C1_C1	VM?I,I,I:I;sp	Vector Load base+disp bytes/half-word/word	__load(op, $w, C1, C1,II); vdest1 = VMem_$w(src1 + src2, @)
+
+\LOOP w B H W 
+VLG_$w_C1_C1	VM?I,L,I:I;sp	Vector Load base+disp bytes/half-word/word	__load(op, $w, C1, C1,IL); vdest1 = VMem_$w(src1 + src2, @)
+
+\LOOP w S D
+VFLG_$w_C1_C1	VM?I,I,I:F;sp	Vector Load base+disp FPR single/double		__load(op, $w, C1, C1,II); vdest1.$w = VMem_$w(src1 + src2, @)
+
+\LOOP w S D
+VFLG_$w_C1_C1	VM?I,L,I:F;sp	Vector Load base+disp FPR single/double		__load(op, $w, C1, C1,IL); vdest1.$w = VMem_$w(src1 + src2, @)
+
+\LOOP w B H W
+VSG_$w_C1		VM?I,I,IL,I:	Vector Store base+disp byte/half-word/word	__store(op, $w, C1,II); VMem_$w(src1 + src2, @) = vsrc3
+
+\LOOP w B H W
+VSG_$w_C1		VM?I,L,IL,I:	Vector Store base+disp byte/half-word/word	__store(op, $w, C1,IL); VMem_$w(src1 + src2, @) = vsrc3
+
+\LOOP w S D
+VFSG_$w_C1		VM?I,I,F,I:	Vector Store base+disp FPR single/double		__store(op, $w, C1, II); VMem_$w(src1 + src2, @) = vsrc3.$w
+
+\LOOP w S D
+VFSG_$w_C1		VM?I,L,F,I:	Vector Store base+disp FPR single/double		__store(op, $w, C1, IL); VMem_$w(src1 + src2, @) = vsrc3.$w
+
+
+# vector permute ops for fixing misaligned memory references
+# For now, memops are allowed to acces misaligned memory, and these 
+# ops are just placeholders that add latency and reserve resources
+
+VPERM			VM?I,I:I;sp		Vector integer permute				vdest1 = vsrc1
+VFPERM_S		VM?F,I:F;sp		Vector single precision permute		vdest1.S = vsrc1.S
+VFPERM_D		VM?F,I:F;sp		Vector double precision permute		vdest1.D = vsrc1.D

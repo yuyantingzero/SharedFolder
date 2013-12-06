@@ -1,0 +1,24 @@
+ # IMPACT Public Release (www.crhc.uiuc.edu/IMPACT)            Version 2.33  #
+ # IMPACT Trimaran Release (www.trimaran.org)                  July 12, 1999 #
+###############################################################################
+#  Run 'read_compile_info --help | more' for documentation.
+#
+#  Source of this file's information:
+#     John C. Gyllenhaal
+#
+#  Revision history for this file:
+#     2/99  Created by John C. Gyllenhaal (www.crhc.uiuc.edu/IMPACT)
+###############################################################################
+
+# Ansi-C
+ANSI_C_SOURCE=1;
+
+# No special settings required
+PREPROCESSING_OPTIONS="";
+LINKING_PREOPTIONS="";
+LINKING_POSTOPTIONS="";
+LIB_REQUIREMENTS="NONE";
+
+DEFAULT_TRAIN="input1";
+DEFAULT_EVAL="input1";
+

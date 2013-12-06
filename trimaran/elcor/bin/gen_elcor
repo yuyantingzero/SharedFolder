@@ -1,0 +1,59 @@
+#!/bin/sh
+
+#	Script to run elcor through multiple input files
+#
+#	Usage: gen_elcor "dir" ["extra args"] < "list"
+#
+#	Scott A. Mahlke
+#
+# Modified to support file extension variations - Ajay Jayaraj
+
+if [ $# -eq 1 ]; then
+	PREFIX="$1";
+	EXTRA_ARGS="";
+
+elif [ $# -eq 2 ]; then
+	PREFIX="$1";
+	FILE_EXT="$2";
+
+elif [ $# -eq 3 ]; then
+	PREFIX="$1";
+	FILE_EXT="$2";
+	EXTRA_ARGS="$3";
+
+else
+	echo '> Usage gen_elcor "dir" ["extra_args"] < "list"';
+        echo '> ';
+	echo '>   "dir" is location of input files';
+	echo '>   "extra_args" are optional additional -P and -F arguments to pass';
+	echo ">                elcor (Put quote around a list of args, ie";
+	echo ">                '-Fnachos=rule -Fdonuts=mmmm -Fmeetings=long')";
+	echo '>   "list" is list of files to process';
+	exit 0200;
+fi;
+
+if [ -f "ELCOR_STATS" ]; then
+    \rm -f ELCOR_STATS;
+fi;
+
+echo "> Prefixing files with ${PREFIX}/";
+echo "> Extra elcor arguments : ${EXTRA_ARGS}";
+
+while read FILE;
+do
+	echo "> processing $PREFIX/$FILE"
+	FILEOUT=`echo $FILE | awk -F. '{print $1}'`
+	elcor \
+		${EXTRA_ARGS} \
+		-i ${PREFIX}/${FILE} \
+		-o ${PREFIX}/${FILEOUT}.${FILE_EXT}
+	ERROR=$?;
+	if [ $ERROR -ne 0 ]; then
+	    echo "> elcor failed on input file: ${FILE}";
+	    echo "> error_code= ${ERROR}";
+	    exit $ERROR;
+	fi;
+done;
+
+echo "> done";
+exit 0;

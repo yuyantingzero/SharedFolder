@@ -1,0 +1,150 @@
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           hpl_pd_elcor.hmdes2
+//      Authors:        Shail Aditya
+//      Created:        January, 1996
+//      Description:    HPL-PD Architecture Description (Elcor Specific)
+//
+/////////////////////////////////////////////////////////////////////////////
+// HPL-PD Machine Architecture Description (IFMB model)
+
+// Preliminary conversion of PLAYDOH.hmdes1 to ELCOR specific hmdes2 format.
+// 
+// Written by Shail Aditya 01/16/96
+// Based on John C. Gyllenhaal's example of PA_7100_IMPACT.hmdes2
+// Based on Rick Hank's PLAYDOH.hmdes1
+
+// *************************************************************
+// Elcor Operations and Properties
+
+SECTION Elcor_Operation_Flag
+{ 
+  //tangw 06-04-02
+  ISCUSTOM ();
+}
+
+SECTION Operand_Latency
+{
+
+  // latency times
+  time_cca_sample(time(cca_sample));
+  time_cca_exception(time(cca_exception));
+  time_cca_latency(time(cca_latency));
+  time_cca_reserve(time(cca_reserve));
+}
+
+
+SECTION Operation_Latency
+{
+  OL_cca(exc(time_cca_exception) 
+	 rsv(time_cca_reserve
+	     time_cca_reserve
+	     time_cca_reserve
+	     time_cca_reserve
+	     time_cca_reserve) 
+ 	 pred(time_cca_sample) 
+	 src(time_cca_sample 
+	     time_cca_sample 
+	     time_cca_sample 
+	     time_cca_sample 
+	     time_cca_sample) 
+	 sync_src(time_cca_sample
+                  time_cca_sample) 
+	 dest(time_cca_latency
+              time_cca_latency
+              time_cca_latency
+              time_cca_latency) 
+	 sync_dest(time_cca_sample
+		   time_cca_sample));
+}
+
+SECTION Resource
+{
+  $for(clust in $0.. (num_clusters-1)) {
+    $for (idx in $0..(cca_units-1)) {
+    R_${clust}_cca${idx}();
+    } 
+  }
+}
+
+// Right now we have a basic 0th cycle resource usage for each resource
+
+SECTION Resource_Usage
+{
+  $for(clust in $0.. (num_clusters-1)) {
+
+    $for (idx in $0..(cca_units-1)) {
+      RU_${clust}_cca${idx}(use(R_${clust}_cca${idx}) time(0));
+    }
+
+  }
+
+}
+
+// Right now we have a simple model of one resource usage per reservation table
+
+SECTION Reservation_Table
+{
+  $for(clust in $0.. (num_clusters-1)) {
+    $for (idx in $0..(cca_units-1)) {
+      RT_${clust}_cca${idx}(use(RU_${clust}_cca${idx}));
+    }
+
+  }
+}
+// *************************************************************
+// Dummy/Pseudo Scheduling Alternatives and Operations
+
+SECTION Operation_Format
+{
+  //modification for custom opcode tangw (06-04-02)
+  OF_custom(pred(FT_p_all) 
+            src(FT_icfbplu_all FT_icfbplu_all FT_icfbplu_all FT_icfbplu_all FT_icfbplu_all)  
+            dest(FT_icfbpu_all FT_icfbpu_all FT_icfbpu_all FT_icfbpu_all FT_icfbpu_all));
+}
+
+SECTION Scheduling_Alternative
+{
+  $for(clust in $0.. (num_clusters-1)) {
+    $for (idx in $0..(cca_units-1)) {
+      //modification for custom opcode tangw (06-04-02)
+      SA_custom(format(OF_custom) latency(OL_cca) resv(RT_${clust}_cca${idx}));
+    }
+  }
+}
+
+SECTION Operation
+{
+  $for(clust in $0.. (num_clusters-1)) {
+    $for (idx in $0..(cca_units-1)) {
+      //modification for custom opcode tangw (06-04-02)
+      "CUSTOM_${clust}_${idx}"(alt(SA_custom));
+    }
+  }
+}
+
+// *************************************************************
+// Elcor Operations
+
+SECTION Elcor_Operation
+{
+  $for(clust in $0.. (num_clusters-1)) {
+    $for (idx in $0..(cca_units-1)) {
+      CUSTOM(op("CUSTOM_${clust}_${idx}") flags(NULLOP NULL SPECULATIVE ISCUSTOM));
+    }
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+  

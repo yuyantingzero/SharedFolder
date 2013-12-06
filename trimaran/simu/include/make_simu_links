@@ -1,0 +1,21 @@
+#!/bin/sh
+
+echo "Linking files from emulib"
+ln -sf ../src/emulib/PD.h .
+ln -sf ../src/emulib/PD_error.h .
+ln -sf ../src/emulib/PD_globals.h .
+ln -sf ../src/emulib/PD_init.h .
+ln -sf ../src/emulib/PD_kernel.h .
+ln -sf ../src/emulib/PD_op.h .
+ln -sf ../src/emulib/PD_ops.h .
+ln -sf ../src/emulib/PD_parms.h .
+ln -sf ../src/emulib/PD_queue.h .
+ln -sf ../src/emulib/PD_reg.h .
+ln -sf ../src/emulib/PD_signals.h .
+ln -sf ../src/emulib/PD_sl.h .
+ln -sf ../src/emulib/PD_stack.h .
+ln -sf ../src/emulib/PD_stats.h .
+ln -sf ../src/emulib/PD_trace.h .
+ln -sf ../src/emulib/PD_trace_defs.h .
+ln -sf ../src/emulib/PD_instrument_memops.h .
+ln -sf ../src/emulib/PD_varargs.h .

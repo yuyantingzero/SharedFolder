@@ -1,0 +1,57 @@
+#########################################################################
+#
+# Settings for the relevant Impact parms used by Elcor
+# 
+#
+#########################################################################
+
+$impact_path$ = $IMPACT_REL_PATH$;
+$impact_rel_parms$ = $impact_path$/parms;
+
+(Larchitecture declaration
+    arch = hpl_pd;
+    model = v1.0;
+    lmdes = $IMPACT_REL_PATH$/mdes/Lhpl_pd/HPL_PD_8G_1BR.lmdes;
+
+    # useless parameters to keep new impact from complaining
+    swarch = default;
+    num_int_caller_reg = 1;
+    num_int_callee_reg = 1;
+    num_flt_caller_reg = 1;
+    num_flt_callee_reg = 1;
+    num_dbl_caller_reg = 1;
+    num_dbl_callee_reg = 1;
+    num_prd_caller_reg = 1;
+    num_prd_callee_reg = 1;
+
+    layout_database_name = fank;
+
+end)
+
+(Lfile declaration
+    input_file_name = stdin;
+    output_file_name = stdout;
+    filelist_file_name = ;
+
+    # useless parameters to keep new impact from complaining
+    file_directory = fank;
+    input_file_extension = fank;
+    output_file_extension = fank;
+    file_start_index = 1;
+    intrinsic_database_filename = fank;
+    intrinsic_support_enabled = no;
+    file_processing_model = file;
+
+end)
+
+(Lglobal $impact_rel_parms$/LGLOBAL_DEFAULTS
+    parm_dump_file_name = ELCOR_PARMS_DUMP;
+    max_dest_operand = 3;
+
+    # useless parameter to keep new impact from complaining
+    cpu_time_print_threshold = 999;
+end)
+
+(Lregalloc $impact_rel_parms$/LREGALLOC_DEFAULTS
+end)
+

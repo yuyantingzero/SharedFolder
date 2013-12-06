@@ -1,0 +1,77 @@
+#
+#	Data CPR default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+(Elcor_Data_CPR declaration
+
+  #reslen = estimate of min schedule length due to resource contraints
+  #    reslen_estimate_type   = 0 => RMSL_RES_LEN
+  #    reslen_estimate_type   = 1 => IFMB_RES_LEN
+  
+  #    reslen_estimate_ops    = 0 => C0_OPS_RES_LEN
+  #    reslen_estimate_ops    = 1 => ANSCESTOR_OPS_RES_LEN
+  #
+  #    reslen_estimate_method = 0 => MAX_RES
+  #    reslen_estimate_method = 1 => WEIGHTED_RES
+
+  reslen_estimate_type = 0;
+  reslen_estimate_ops = 0;
+  reslen_estimate_method = 0;
+
+
+  #deplen = estimate of min schedule length due to dependencies
+  #   deplen_estimate_type    = 0 => EDGE_LATENCY_DEP_LEN 
+  #   deplen_estimate_type    = 1 => OTHER_DEP_LEN (do not use!)
+  #
+  #   deplen_estimate_method  = 0 => MAX_DEP 
+  #   deplen_estimate_method  = 1 => WEIGHTED_DEP 
+
+  deplen_estimate_type = 0;
+  deplen_estimate_method = 0;
+
+
+  #set to 1 if you wish to see the edgedrawing (only critical path
+  #edges) before each application of a data-cpr transform
+
+  display_critical_region = no;
+
+
+  #-------------------------------------------------
+  #data cpr module itself is split into two sections
+  #  - always_profitable_section
+  #  - the incremental (loop) section 
+  #one can select either/both/none
+  #-------------------------------------------------
+  do_always_profitable_datacpr = yes;
+  do_incremental_datacpr = yes;
+
+
+  #-------------------------------------------------
+  # select whichever data cpr optimizations you need
+  #-------------------------------------------------
+  do_renaming = 1;
+  do_arith_reassoc = 0;
+
+
+  #rename_method : for vr renaming data-cpr transform
+  #          5    => blind renaming
+  #          4    => procedure level renaming_with_copy
+  #          3    => procedure level renaming
+  #          2    => HB level renaming_with_copy
+  #          1    => HB level renaming
+  #          else => no renaming
+  # NOTE :: 4 and 3 are equivalent since for procedures there are
+  #         no live-ins or live-outs
+
+  rename_method = 3;
+  do_cp_selective_renaming =  no;
+
+
+  #arithmetic reassoc will height reduce flows chains longer than this;
+  reassoc_chain_length = 6;
+  #if this is enabled, then reduction to vector cases will be ignores;
+  do_scalar_reassoc_only = no;
+
+end)

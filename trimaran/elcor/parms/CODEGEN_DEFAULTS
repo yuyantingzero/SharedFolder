@@ -1,0 +1,29 @@
+#
+#	Codegen default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+(Elcor_Codegen declaration
+
+# codegen induced opti
+  do_codegen_opti = yes;
+
+# fast mode codegen; skips couple of redundant checks for a 'regular' machine
+  codegen_fast_mode = yes;
+
+# two operand conversion
+  do_two_operand = no;
+
+# create stack frame
+  create_stack_frame = no;
+
+# set to yes if you need to callee save the icmove register. this is needed for
+# generating real binaries, and requires special handling in the stack frame.
+  need_to_save_icmove = no;
+
+# restricted io move codegen. turn off if the benchmark has ops not in the mdes,
+# i.e. when doing loop accelerator synthesis.
+  do_move_codegen = yes;
+
+end)

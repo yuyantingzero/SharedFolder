@@ -1,0 +1,19 @@
+SECTION Pattern_Node_Flags
+{
+}
+
+SECTION Pattern_Edge
+{
+}
+
+SECTION Pattern_Node
+{
+}
+
+SECTION Customop_Graph
+{
+}
+
+SECTION Custom_Operation
+{
+}

@@ -1,0 +1,130 @@
+#!/bin/tcsh
+
+if ($# != 1 ) then
+  echo "Error :: Too few arguments, one argument is required"
+  echo "         USSAGE: quick_compile <file_name> "
+  exit;
+endif
+
+if (! $?TRIMARAN_ROOT)  then
+ echo "Error :: TRIMARAN_ROOT environmental variable must be set up"
+ exit;
+endif
+
+if (-e $1 ) then
+  set cfile=$1;
+  set cfile1 = $1:r
+else
+ echo "Error :: File $1 does not exist"
+ exit;
+endif
+
+
+\cp $1 temp
+
+setenv BASELINE_PARMS_FILE ${TRIMARAN_ROOT}/impact/parms/STD_PARMS.TRIMARAN
+
+setenv BENCH_DIR "."
+
+setenv STD_PARMS_FILE ${TRIMARAN_ROOT}/impact/projects/full/project_parms
+
+# 1
+gen_CtoP  $cfile
+
+# 2
+echo $cfile1.pc > impactlist;
+echo '(* $BASELINE_PARMS_FILE$ \n end)' > compile_parms
+
+# 3
+gen_PtoP-flatten . < impactlist
+
+# 4
+gen_PtoH . < impactlist
+
+#5
+#\ls *.hc > impactlist
+echo $cfile1.hc > impactlist;
+gen_HtoL . IMPACT Lcode < impactlist;
+
+#6
+#\ls *.lc > impactlist;
+echo $cfile1.lc > impactlist;
+gen_Lopti . IMPACT Lcode 4  < impactlist;
+  
+#7
+#\ls *.O > impactlist;
+echo $cfile1.O > impactlist;
+gen_Limpact . Lcode O_im  < impactlist;
+
+
+#8
+#\ls *.O > impactlist;
+echo $cfile1.O > impactlist;
+gen_Lhpl_pd . V1.1-HP O_tr < impactlist;
+
+
+#8
+#\ls *.O > impactlist;
+echo $cfile1.O > impactlist;
+gen_Lsuperscalar . IMPACT Lcode < impactlist;
+  
+
+#9
+#\ls *.S > impactlist;
+echo $cfile1.S > impactlist;
+gen_Limpact . Lcode S_im  < impactlist;
+
+
+#10
+#\ls *.S > impactlist;
+echo $cfile1.S > impactlist;
+gen_Lhpl_pd . V1.1-HP S_tr  < impactlist;
+
+
+#10
+#\ls *.O > impactlist;
+echo $cfile1.O > impactlist;
+gen_Lhyper . IMPACT Lcode  < impactlist;
+
+
+#11
+#\ls *.H > impactlist;
+echo $cfile1.H > impactlist;
+gen_LsuperscalarH . IMPACT Lcode \
+           "-Fdo_branch_combining=yes -Fpred_exec_support=yes" < impactlist;
+
+
+
+#10
+#\ls *.HS > impactlist;
+echo $cfile1.HS > impactlist;
+gen_Limpact . Lcode HS_im  < impactlist;
+
+
+#10
+#\ls *.HS > impactlist;
+echo $cfile1.HS > impactlist;
+gen_Lhpl_pd . V1.1-HP HS_tr  < impactlist;
+
+#11
+elcor -i $cfile1.O_tr -o $cfile1.O_el -Foutput_format=rebel
+
+
+echo "DONE! Rebel file $cfile1.O_el is created"
+
+
+
+
+\cp temp $1
+
+
+
+
+\rm *.pc *.HS *.O *.S  *.H *.HS_tr *.S_tr *.lc *.hc  *.HS_im *.nm  *.pcf *.S_im
+\rm *.md
+\rm *.O_im
+\rm impactlist
+\rm compile_parms
+\rm temp
+\rm *.stat
+\rm ELCOR*

@@ -1,0 +1,70 @@
+
+Starting stdargs test:
+stdarg_print_int_list entered with count = 1
+  Arg 1: 2
+
+stdarg_print_int_list entered with count = 3
+  Arg 1: 20
+  Arg 2: 30
+  Arg 3: 40
+
+stdarg_print_int_list entered with count = 10
+  Arg 1: 200
+  Arg 2: 300
+  Arg 3: 400
+  Arg 4: 500
+  Arg 5: 600
+  Arg 6: 700
+  Arg 7: 800
+  Arg 8: 900
+  Arg 9: 1000
+  Arg 10: 1100
+
+stdarg_print_int_list2 entered with header ='header2' and count = 3
+  Arg 1: 21
+  Arg 2: 31
+  Arg 3: 41
+
+stdarg_print_long_list entered with count = 1
+  Arg 1: 200
+
+stdarg_print_long_list entered with count = 3
+  Arg 1: 2000
+  Arg 2: 3000
+  Arg 3: 4000
+
+stdarg_print_long_list entered with count = 10
+  Arg 1: 20000
+  Arg 2: 30000
+  Arg 3: 40000
+  Arg 4: 50000
+  Arg 5: 60000
+  Arg 6: 70000
+  Arg 7: 80000
+  Arg 8: 90000
+  Arg 9: 100000
+  Arg 10: 110000
+
+stdarg_print_double_list entered with count = 1
+  Arg 1: 2.202000
+
+stdarg_print_double_list entered with count = 3
+  Arg 1: 20.020000
+  Arg 2: 30.030000
+  Arg 3: 40.040000
+
+stdarg_print_double_list entered with count = 10
+  Arg 1: 20.020200
+  Arg 2: 30.030300
+  Arg 3: 40.040400
+  Arg 4: 50.050500
+  Arg 5: 60.060600
+  Arg 6: 70.070700
+  Arg 7: 80.080800
+  Arg 8: 90.090900
+  Arg 9: 100.101000
+  Arg 10: 110.111100
+
+In stdarg_vfprintf:
+vfprintf: 'c' 'string1' '-5' '-3.230000'
+          'q' 'string2' '50' '30.203000'

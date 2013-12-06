@@ -1,0 +1,108 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           arm_elcor_std.hmdes2
+//      Authors:        Nate Clark
+//      Created:        October, 2003
+//      Description:    ARM Architecture Description (toplevel)
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// based on the ARM9TDMI Technical Reference Manual
+
+
+// Register File sizes
+
+// ARM has 15 GPRs plus a PC
+$def !gpr_static_size 	15
+
+// and 8 floating point regs. the ninth-twelth are the const marcos. i know
+// it's ugly, but impact needs it 
+$def !fpr_static_size 16
+
+// Neither of these has any meaning in ARM, so make them arbitrary
+// large numbers to avoid spill code
+$def !pr_static_size 	512
+$def !btr_static_size 	512
+
+
+// Functional Units
+
+$def !exec_units 	1
+
+$def !unrestricted_lit_size    9
+
+
+// Latency Parameters
+// sample = earliest input sampling (flow) time 
+// exception = latest input hold (anti) time (to restart from intervening exceptions)
+// latency = latest output available (flow) time 
+// reserve = earliest output allocation (anti) time (to allow draining the pipeline)
+
+$def !int_alu_sample		0
+$def !int_alu_exception		0
+$def !int_alu_latency		1
+$def !int_alu_reserve		0
+
+$def !int_cmpp_sample		0
+$def !int_cmpp_exception	0
+$def !int_cmpp_latency		1
+$def !int_cmpp_reserve		0
+
+// This is overly pessimistic. ARM has early termination conditions which
+// make 4 cycle multiplies rare.
+$def !int_multiply_sample	0
+$def !int_multiply_exception	0
+$def !int_multiply_latency	4
+$def !int_multiply_reserve	0
+
+// ARM doesn't have a divide; it gets turned into a function call. 
+// Make the latency small so that dependant instructions are scheduled right
+// after the call.
+$def !int_divide_sample		0
+$def !int_divide_exception	0
+$def !int_divide_latency	1
+$def !int_divide_reserve	0
+
+$def !float_alu_sample          0
+$def !float_alu_exception       0
+$def !float_alu_latency         1
+$def !float_alu_reserve         0
+
+$def !float_cmpp_sample         0
+$def !float_cmpp_exception      0
+$def !float_cmpp_latency        1
+$def !float_cmpp_reserve        0
+
+$def !float_multiply_sample     0
+$def !float_multiply_exception  0
+$def !float_multiply_latency    1
+$def !float_multiply_reserve    0
+
+$def !float_divide_sample       0
+$def !float_divide_exception    0
+$def !float_divide_latency      1
+$def !float_divide_reserve      0
+
+
+$def !post_increment_add        1
+$def !load_level1_sample	0
+$def !load_level1_exception	0
+$def !load_level1_latency	2
+$def !load_level1_reserve       0
+
+$def !store_sample		0
+$def !store_exception		0
+$def !store_latency		2
+$def !store_reserve		0
+
+$def !branch_sample		0
+$def !branch_exception		0
+$def !branch_latency		1
+$def !branch_reserve		0
+
+// Standard Mdes included files 
+$include "../structure_pristine.hmdes2"
+$include "arm_pristine.hmdes2"
+$include "arm_elcor.hmdes2"
+$include "arm_custom_ops.hmdes2"
+

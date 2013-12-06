@@ -1,0 +1,35 @@
+#
+#	Elcor stats default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Stats declaration
+    do_cycle_count       = yes;          # Procedure level cycle count
+    do_block_cycle_count = no;          # HB/BB/Loop level cycle count
+    do_cpr_cycle_count   = no;          # Cycle count for CPR blocks
+    do_wgt_crit_path     = no;          # computes weighted critical path stats
+    do_op_count          = yes;          # Procedure level operation count
+    show_block_types     = no;          # Scheduling region types, bb/sb/hb
+    do_opcode_usage      = no;          # Opcode usage histogram
+    do_lit_histogram     = no;          # Literal histogram
+    do_regalloc_overhead = no;		# op statistics for reg allocation
+    do_regalloc_file_overhead = no;     # Reg file level overhead info
+    do_run_time = no;                   # Display running time for Elcor
+    do_block_run_time = no;             # Block level running time for Elcor
+    do_crit_path = no;                  # Weighted critical path lenght measures
+    do_resource = no;                   # Weighted resource estimator
+    do_cpr_blk_info = no;		# Control cpr application stats
+
+    # Notes for the branch histogram: Number of categories must evenly
+    # divide 100 (ie 5, 10 are ok, 8 is not);  When fold over is set,
+    # number of categories must be an even number.
+    do_branch_histogram = no;           # Branch taken freq histogram
+      br_hist_num_categories = 10;      # Number of buckets in the br hist
+      br_hist_include_bru = yes;        # Include BRU ops in br hist
+      br_hist_fold_over = no;           # Fold over histogram at 50% mark
+
+    # Branch misprediction penalty used for computed estimated cycle counts
+    branch_mispredict_penalty = 0;	# Assumed penalty for MP branch (stats use only)
+end)

@@ -1,0 +1,51 @@
+#
+#	Modulo scheduler default parameters.
+#	Elcor compiler - HP Laboratories
+#
+#
+(Elcor_Loop_sched declaration
+    # Hoist the pbr for the loop backedge to the preloop block.
+    hoist_pbr = yes;
+
+    # Priority model: controls the treatment of 0 latency dependences by the
+    # modulo scheduler. Possible values are:
+    # MEM_PRIORITIZED = 1; NONE_PRIORITIZED = 2
+    # MEM_PRIORITIZED = 1: Only 0-latency memory dependence are permitted
+    # bewteen operations in a single cycle provided the dependences go from
+    # left to right. The target machine can execute operations in parallel or
+    # in left-to-right order but must support memory port priority. 
+    # NONE_PRIORITIZED = 2 - 0-latency dependent operations can't be scheduled
+    # in a single cycle; they must be separated by at least one cycle.  
+    # The target machine can execute operations in parallel or in
+    # left-to-right and need not support memory port priority. 
+    lsched_priority_model = 2;
+
+    # Msched algorithm to use. can be 'iterative' (a la
+    # Rau) or 'swing' (Llosa, Gonzalez, Ayguade, Valero).
+    msched_algorithm = iterative;
+
+    # perform stage scheduling to reduce register liveranges. Experimental 
+    # module.
+    do_stage_scheduling = no;
+
+    # budget ratio controls how hard the modulo scheduler attempts to
+    # find a schedule at the given II. It is a positive integer. Higher
+    # numbers cause the scheduler to try harder (takes more time). A 
+    # typical value is 3.
+    budget_ratio = 3;
+
+    # Controls the size of software pipelinable loop
+    swploop_size_threshold = 400;
+
+    block = 0;  # block id of loop to modulo schedule.  0 = all
+    ii = 0;     # desired II.  0 = use MII
+
+    # what type of register allocation to do for the modulo scheduled
+    # loops. valid answers are 'mve' for modulo variable expansion
+    # or 'rr' for rotating registers.
+    msched_allocator = rr
+
+    # allow bumping II when msched fails?
+    bump_ii = yes;
+
+end)

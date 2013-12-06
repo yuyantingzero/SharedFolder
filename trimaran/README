@@ -1,0 +1,17 @@
+Installation instructions are documented in the manual 
+available in manual/trimaran-4.0-manual.pdf 
+
+The latest version of the manual is always available at
+http://www.trimaran.org/
+
+The manual also includes instructions for using the compiler
+and simulator, and guides on how carry out compiler and 
+architecture research using Trimaran. 
+
+Please report any bugs you encounter in the documentation,
+or difficulties with the installation process, to the Trimaran
+support team at support@trimaran.org.
+
+Active users and developers may wish to join the mailing list.
+For more information, or to join, visit
+http://www.trimaran.org/support.shtml

@@ -1,0 +1,17 @@
+#!/usr/bin/perl
+
+$command = join(' ', @ARGV);
+@c = split /;/, $command;
+
+$finalretval = 0;
+
+foreach $c(@c) {
+  $retval = system($command);
+  
+  if($retval != 0) {
+   $finalretval = 1;
+  }
+
+}
+
+exit($finalretval);

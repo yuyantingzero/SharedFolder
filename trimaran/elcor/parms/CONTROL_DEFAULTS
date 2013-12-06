@@ -1,0 +1,18 @@
+#
+#	Control default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+(Elcor_Control declaration
+
+	# If-conversion model ,valid models are:
+	# frp - fully resolved predicates, remove all internal (to the region)
+	#	control dependences
+	# prp - partially resolved predicates, only remove control dependences
+	#       to branches that are eliminated.
+	if_conv_model=frp;
+
+	# Internal development switch only
+	enable_branch_reorder = no;
+end)

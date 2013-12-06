@@ -1,0 +1,91 @@
+
+setenv TRIMARAN_ROOT ~/trimaran
+setenv TRIMARAN_HOST_TYPE x86lin
+setenv TRIMARAN_HOST_COMPILER gcc
+setenv CC gcc
+setenv CXX g++
+
+setenv IMPACT_REL_PATH $TRIMARAN_ROOT/openimpact
+setenv IMPACT_ROOT $IMPACT_REL_PATH
+setenv IMPACT_HOST_PLATFORM x86lin
+setenv IMPACT_HOST_COMPILER gcc
+setenv IMPACT_BUILD_TYPE ${IMPACT_HOST_PLATFORM}
+setenv STD_PARMS_FILE ${IMPACT_REL_PATH}/parms/STD_PARMS.IMPACT
+setenv DEFAULT_PROJECT full
+
+setenv ELCOR_HOME               $TRIMARAN_ROOT/elcor
+setenv ELCOR_BIN                $ELCOR_HOME/bin
+setenv ELCOR_PARMS_FILE         $ELCOR_HOME/parms/ELCOR_PARMS
+setenv ELCOR_REL_PATH           $ELCOR_HOME
+setenv ELCOR_USER               ELCOR
+
+setenv SIMU_REL_PATH            $TRIMARAN_ROOT/simu
+setenv SIMU_HOME                $SIMU_REL_PATH
+setenv SIMU_BIN_PATH            $SIMU_REL_PATH/bin
+setenv SIMU_PARMS_FILE          $SIMU_REL_PATH/parms/SIMULATOR_DEFAULTS
+setenv DINERO_HOME		$SIMU_REL_PATH/dinero
+
+setenv ARM_REL_PATH		$TRIMARAN_ROOT/arm
+
+setenv GUI_REL_PATH		$TRIMARAN_ROOT/gui
+setenv GUI_BIN			$GUI_REL_PATH/bin
+
+setenv TAS_HOME			$TRIMARAN_ROOT/tas
+setenv TAS_BIN			$TAS_HOME/bin
+setenv TAS_PARMS_FILE		$TAS_HOME/parms/TAS_PARMS
+setenv TLD_PARMS_FILE		$TAS_HOME/parms/TLD_PARMS
+setenv TAS_REL_PATH		$TAS_HOME
+
+setenv USER_BENCH_PATH1 "${TRIMARAN_ROOT}/benchmarks/simple  \
+                         ${TRIMARAN_ROOT}/benchmarks/utils  \
+                         ${TRIMARAN_ROOT}/benchmarks/mediabench  \
+                         ${TRIMARAN_ROOT}/benchmarks/netbench  \
+                         ${TRIMARAN_ROOT}/benchmarks/encryption  \
+                         ${TRIMARAN_ROOT}/benchmarks/mibench/automotive  \
+                         ${TRIMARAN_ROOT}/benchmarks/mibench/network \
+                         ${TRIMARAN_ROOT}/benchmarks/mibench/telecomm \
+                         ${TRIMARAN_ROOT}/benchmarks/mibench/security \
+                         ${TRIMARAN_ROOT}/benchmarks/mibench/consumer \
+                         ${TRIMARAN_ROOT}/benchmarks/specint92  \
+                         ${TRIMARAN_ROOT}/benchmarks/specfp92  \
+                         ${TRIMARAN_ROOT}/benchmarks/specint95  \
+                         ${TRIMARAN_ROOT}/benchmarks/specfp95  \
+                         ${TRIMARAN_ROOT}/benchmarks/specint2000  \
+                         ${TRIMARAN_ROOT}/benchmarks/specfp2000  \
+                         ${TRIMARAN_ROOT}/benchmarks/specint2006  \
+                         ${TRIMARAN_ROOT}/benchmarks/specfp2006  \
+                         ${TRIMARAN_ROOT}/benchmarks/perfect \
+                         ${TRIMARAN_ROOT}/benchmarks/integer_bench \
+                         ${TRIMARAN_ROOT}/benchmarks/eecs583 \
+                         ${TRIMARAN_ROOT}/benchmarks/streams \
+                         ${TRIMARAN_ROOT}/benchmarks/olden \
+                         ${TRIMARAN_ROOT}/benchmarks/kernels \
+                         "
+                          
+
+setenv DAVINCIHOME		/usr/share/daVinci_V2.1
+setenv DAVINCIEXE		/usr/share/daVinci_V2.1
+
+# M5elements
+setenv M5_ROOT                  $TRIMARAN_ROOT/m5/install
+setenv M5_OUTPUT_DIR            .
+setenv M5_CONFIG_FILE           $M5_ROOT/m5/m5elements/default.py
+if ($?LD_LIBRARY_PATH) then
+  setenv LD_LIBRARY_PATH          ${LD_LIBRARY_PATH}:${M5_ROOT}/m5/build/ALPHA
+else
+  setenv LD_LIBRARY_PATH          ${M5_ROOT}/m5/build/ALPHA
+endif
+
+#benchmark related stuff
+setenv PGPPATH ./
+
+set path = (${IMPACT_REL_PATH}/bin ${IMPACT_REL_PATH}/scripts ${IMPACT_REL_PATH}/driver ${ELCOR_BIN} ${SIMU_BIN_PATH} ${TRIMARAN_ROOT}/scripts ${GUI_BIN} ${TAS_BIN} ${ARM_REL_PATH} $path)
+
+setenv SUIFHOME ${TRIMARAN_ROOT}/suif
+setenv MACHINE x86-redhat-linux
+setenv COMPILER_NAME gcc
+
+if (-e $SUIFHOME/setup_suif) then
+    eval `$SUIFHOME/setup_suif >& /dev/null`
+endif
+

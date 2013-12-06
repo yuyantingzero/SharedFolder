@@ -1,0 +1,141 @@
+#!/bin/sh
+
+rm -f *.h *.cpp
+
+if [ -d ../src/Analysis ] ; then
+        echo "Linking files from Analysis dir"
+        ln -s ../src/Analysis/*.h .;
+fi;
+
+if [ -d ../src/Cache ] ; then
+        echo "Linking files from Cache dir"
+        ln -s ../src/Cache/*.h .;
+fi;
+
+if [ -d ../src/Cluster ] ; then
+        echo "Linking files from Cluster dir"
+        ln -s ../src/Cluster/*.h .;
+fi;
+
+if [ -d ../src/Customop ] ; then
+        echo "Linking files from Customop dir"
+        ln -s ../src/Customop/*.h .;
+fi;
+
+if [ -d ../src/Codegen ] ; then
+        echo "Linking files from Codegen dir"
+        ln -s ../src/Codegen/*.h .;
+fi;
+
+if [ -d ../src/CPR ] ; then
+        echo "Linking files from CPR dir"
+        ln -s ../src/CPR/*.h .;
+fi;
+
+if [ -d ../src/RegWindow ] ; then
+        echo "Linking files from RegWindow dir"
+        ln -s ../src/RegWindow/*.h .;
+fi;
+
+if [ -d ../src/Control ] ; then
+        echo "Linking files from Control dir"
+        ln -s ../src/Control/*.h .;
+fi;
+
+if [ -d ../src/DataCPR ] ; then
+        echo "Linking files from DataCPR dir"
+        ln -s ../src/DataCPR/*.h .;
+fi;
+
+if [ -d ../src/Examples ] ; then
+        echo "Linking files from Examples dir"
+        ln -s ../src/Examples/*.h .;
+fi;
+
+if [ -d ../src/Graph ] ; then
+        echo "Linking files from Graph dir"
+        ln -s ../src/Graph/*.h .;
+	ln -s ../src/Graph/operand_concat.cpp .;
+fi;
+
+if [ -d ../src/Impact ] ; then
+        echo "Linking files from Impact dir"
+        ln -s ../src/Impact/*.h .;
+fi;
+
+if [ -d ../src/Vectorize ] ; then
+        echo "Linking files from Vectorize dir"
+        ln -s ../src/Vectorize/*.h .;
+fi;
+
+if [ -d ../src/MSched ] ; then
+        echo "Linking files from MSched dir"
+        ln -s ../src/MSched/*.h .;
+fi;
+
+if [ -d ../src/Main ] ; then
+        echo "Linking files from Main dir"
+        ln -s ../src/Main/*.h .;
+fi;
+
+if [ -d ../src/Mdes ] ; then
+        echo "Linking files from Mdes dir"
+        ln -s ../src/Mdes/*.h .;
+fi;
+
+if [ -d ../src/Opti ] ; then
+        echo "Linking files from Opti dir"
+        ln -s ../src/Opti/*.h .;
+fi;
+
+if [ -d ../src/Rebel ] ; then
+        echo "Linking files from Rebel dir"
+        ln -s ../src/Rebel/*.h .;
+        ln -s ../src/Rebel/IR_map.cpp .;
+fi;
+
+if [ -d ../src/RotReg ] ; then
+        echo "Linking files from RotReg dir"
+        ln -s ../src/RotReg/*.h .;
+fi;
+
+if [ -d ../src/ScalarReg ] ; then
+	echo "Linking files from ScalarReg dir"
+	ln -s ../src/ScalarReg/*.h .;
+fi;
+
+if [ -d ../src/Sched ] ; then
+        echo "Linking files from Sched dir"
+        ln -s ../src/Sched/*.h .;
+fi;
+
+if [ -d ../src/Stats ] ; then
+        echo "Linking files from Stats dir"
+        ln -s ../src/Stats/*.h .;
+fi;
+
+if [ -d ../src/Tools ] ; then
+        echo "Linking files from Tools dir"
+        ln -s ../src/Tools/*.h .;
+	ln -s ../src/Tools/concatanator.cpp .;
+	ln -s ../src/Tools/dlist.cpp .;
+	ln -s ../src/Tools/filter.cpp .;
+	ln -s ../src/Tools/hash_map.cpp .;
+	ln -s ../src/Tools/hash_set.cpp .;
+	ln -s ../src/Tools/hash_table.cpp .;
+	ln -s ../src/Tools/list.cpp .;
+	ln -s ../src/Tools/list_set.cpp .;
+	ln -s ../src/Tools/map.cpp .;
+	ln -s ../src/Tools/matrix.cpp .;
+	ln -s ../src/Tools/msort.cpp .;
+        ln -s ../src/Tools/priority_queue.cpp .;
+	ln -s ../src/Tools/slist.cpp .;
+	ln -s ../src/Tools/tuples.cpp .;
+	ln -s ../src/Tools/graph.cpp .;
+	ln -s ../src/Tools/vector.cpp .;
+fi;
+
+if [ -d ../src/Visualize ] ; then
+        echo "Linking files from Visualize dir"
+        ln -s ../src/Visualize/*.h .;
+fi;

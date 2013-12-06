@@ -1,0 +1,93 @@
+# #	Elcor driver default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Driver declaration
+    # null_processing overrides all driver parms and just skips process_funct
+    # if it is set to yes
+    do_null_processing   = no;	
+
+    # null processing for simu overrides all parms and does *only* the bare
+    # minimum required to make the function run through SIMU
+    do_null_processing_for_simu = no;
+
+
+    # Selective processing allows selective skipping of functions in a program
+    # to speed up compile time thru elcor.
+    #     Selective processing modes:
+    #        off = disabled (the default)
+    #        weight = skip functions that are entered <= specified amount
+    #				(sel_processing_weight is the amount)
+    #        name = skip functions that are not listed in a specific input file
+    #				(sel_processing_name_file is the input file)
+    # 
+    # do_stats_always = enables stat collection even on skipped procedures.  Note 
+    # 			scheduling dependent statistics (ie cycle estimates) will
+    #			be 0 because scheduling is skipped, but stats independent
+    #			of scheduling (ie op counts) will be correct.
+    do_sel_processing = off;
+      sel_processing_weight = 0.0;
+      sel_processing_name_file = ELCOR_SEL_PROCESS;
+      do_stats_always = no;
+
+    #
+    # Enable/Disable high-level elcor modules
+    #
+      # Classical optimizations - cse, dead code, etc.
+      do_classic_opti = no;
+
+      # Width Analysis - reduction of varaible and reference widths.
+      do_width_analysis = no;
+
+      # Read in bitwidth attribute passed down from Impact.
+      do_read_impact_widths = no;
+
+      # Control height reduction
+      do_scalar_control_cpr = no;
+
+      # Data height reduction (currently not available)
+      do_data_cpr = no;
+
+      # HB/SB prepass scheduling
+      do_prepass_scalar_scheduling = yes;
+
+      # Scalar register allocation
+      do_scalar_regalloc   = yes;
+
+      # HB/SB postpass scheduling
+      do_postpass_scalar_scheduling = yes;
+
+      # Modulo scheduling/rotating register allocation for single BB loops
+      do_modulo_scheduling = yes;
+
+      # Custom function unit recognition
+      do_prepass_custom_ops = no;
+      do_postpass_custom_ops = no;
+
+    # display scheduling edges via DOT
+    show_edges = no;
+
+    # punt after timeout seconds; no time limit if set to zero
+    timeout_seconds = 0;
+
+    # yes = do all codegen steps in process_function.
+    # no  = skip all codegen steps except for do_initial_codegen.  initial codegen
+    #       can't be skipped since invalid code would result.
+    # say yes here except when doing loop accelerator synthesis.
+    do_codegen = yes;
+
+    # Run sample pieces of code from the Examples directory.
+    # These were intended as a good introduction on how to do common
+    # things in elcor.
+    do_examples = no;
+
+    # Just display the cfg/dfg and exit.
+    # Used in trimaran-gui for IR viewing
+    gui_view_ir_cfg = no;
+    gui_view_ir_dfg = no;
+
+    # SLARSEN
+    do_vectorize = no;
+end)

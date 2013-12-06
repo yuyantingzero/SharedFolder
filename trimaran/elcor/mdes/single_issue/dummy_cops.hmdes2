@@ -1,0 +1,19 @@
+SECTION Operand_Flags
+{
+}
+
+SECTION Operand_Hookup
+{
+}
+
+SECTION Primitive_Op
+{
+}
+
+SECTION Customop_Semantics
+{
+}
+
+SECTION Custom_Operation
+{
+}

@@ -1,0 +1,43 @@
+#!/bin/csh -f
+#
+
+cvs status $1 |& awk \
+	'BEGIN { \
+		commit = ""; \
+		add = ""; \
+		update = ""; \
+		merge = ""; \
+		conflict = ""; \
+	} \
+	/cvs server:/ || /cvs status:/ { \
+		cur_dir = $4; \
+	} \
+	/Needs Merge/ { \
+		merge = sprintf("%s%s\n", merge, cur_dir"/"$2); \
+	} \
+	/Locally Modified/ || /Locally Added/ { \
+		commit = sprintf("%s%s\n", commit, cur_dir"/"$2); \
+	} \
+	/Unknown/ { \
+		add = sprintf("%s%s\n", add, cur_dir"/"$4); \
+	} \
+	/\?/ {\
+		add = sprintf("%s%s\n", add, $2); \
+	} \
+	/Needs Patch/ { \
+		update = sprintf("%s%s\n", update, cur_dir"/"$2); \
+	} \
+	/Needs Checkout/ { \
+		update = sprintf("%s%s\n", update, cur_dir"/"$4); \
+	} \
+	/Unresolved Conflict/ { \
+		conflict = sprintf("%s%s\n", conflict, cur_dir"/"$2); \
+	} \
+	END { \
+		print "\nFiles that need ADDed\n---------------------------------\n"add; \
+		print "\nFiles that need UPDATE and COMMIT\n---------------------------------\n"merge; \
+		print "\nFiles that need COMMIT\n----------------------\n"commit; \
+		print "\nFiles that need UPDATE\n----------------------\n"update; \
+		print "\nFiles with unresolved CONFLICTS\n-------------------------------\n"conflict; \
+	}'
+

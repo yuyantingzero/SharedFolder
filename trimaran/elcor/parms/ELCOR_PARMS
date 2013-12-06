@@ -1,0 +1,97 @@
+#########################################################################
+#
+# Elcor compiler parameter file
+#
+#########################################################################
+
+$elcor_rel_path$ = $ELCOR_HOME$;
+$elcor_rel_parms$ = $elcor_rel_path$/parms;
+
+#########################################################################
+#
+# Impact parms needed by elcor
+#
+#########################################################################
+
+(Larchitecture $elcor_rel_parms$/ELCOR_IMPACT_PARMS
+end)
+
+(Lfile $elcor_rel_parms$/ELCOR_IMPACT_PARMS
+end)
+
+(Lglobal $elcor_rel_parms$/ELCOR_IMPACT_PARMS
+end)
+
+(Lregalloc $elcor_rel_parms$/ELCOR_IMPACT_PARMS
+end)
+
+#########################################################################
+#
+# Actual elcor parms
+#
+#########################################################################
+
+(Elcor_Architecture $elcor_rel_parms$/ARCHITECTURE_DEFAULTS
+end) 
+
+(Elcor_IO $elcor_rel_parms$/IO_DEFAULTS
+end)
+
+(Elcor_Global $elcor_rel_parms$/GLOBAL_DEFAULTS
+end)
+
+(Elcor_Analysis $elcor_rel_parms$/ANALYSIS_DEFAULTS
+end)
+
+(Elcor_Data_CPR $elcor_rel_parms$/DATA_CPR_DEFAULTS
+end)
+
+(Elcor_Codegen $elcor_rel_parms$/CODEGEN_DEFAULTS
+end)
+
+(Elcor_Regwindow $elcor_rel_parms$/REGWINDOW_DEFAULTS
+end)
+
+(Elcor_Control $elcor_rel_parms$/CONTROL_DEFAULTS
+end)
+
+(Elcor_CPR $elcor_rel_parms$/CPR_DEFAULTS
+end)
+
+(Elcor_Debug $elcor_rel_parms$/DEBUG_DEFAULTS
+end)
+
+(Elcor_Driver $elcor_rel_parms$/DRIVER_DEFAULTS
+end)
+
+(Elcor_Stats $elcor_rel_parms$/STATS_DEFAULTS
+end)
+
+(Elcor_Scalar_sched $elcor_rel_parms$/SCALAR_SCHED_DEFAULTS
+end)
+
+(Elcor_Scalar_regalloc $elcor_rel_parms$/SCALAR_REGALLOC_DEFAULTS
+end)
+
+(Elcor_Loop_sched $elcor_rel_parms$/LOOP_SCHED_DEFAULTS
+end)
+
+(Elcor_Loop_regalloc $elcor_rel_parms$/LOOP_REGALLOC_DEFAULTS
+end)
+
+(Elcor_Opti $elcor_rel_parms$/OPTI_DEFAULTS
+end)
+
+(Elcor_Cache $elcor_rel_parms$/CACHE_DEFAULTS
+end)
+
+(Elcor_Cluster $elcor_rel_parms$/CLUSTER_DEFAULTS
+end)
+
+(Elcor_CustomOP $elcor_rel_parms$/CUSTOM_OP_DEFAULTS
+end)
+
+# SLARSEN: Vectorizer initialization
+(Elcor_Vectorizer $elcor_rel_parms$/VECTORIZER_DEFAULTS
+end)
+

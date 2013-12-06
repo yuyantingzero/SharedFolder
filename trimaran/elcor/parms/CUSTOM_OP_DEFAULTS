@@ -1,0 +1,17 @@
+#
+#	Custom op replacement default parameters
+#
+#
+
+(Elcor_CustomOP declaration
+
+	# the algorithm used to select custom ops/CCA subroutines.
+	# can be 'no_mapping', 'greedy_mapping', or 'bnb_mapping'.
+	mapping_algorithm = greedy_mapping;
+
+	print_cop_stats = no;
+
+	# FIX: only for debug. remove me.
+	max_cops = 976987677;
+
+end)

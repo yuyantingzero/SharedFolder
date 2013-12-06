@@ -1,0 +1,406 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           arm_custom_ops.hmdes2
+//      Authors:        Nate Clark
+//      Created:        October 2005
+//      Description:    ARM has some wierd opcodes, such as ADDs with an 
+//                      optional shift of one of the operands. Instead of
+//                      natively supporting them with an HPL-PD opcode
+//                      we define custom op patterns that the compiler can
+//                      identify and replace automatically.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// This lists groups of ops that can be combined in similar custom ops.
+// It's just a convenience to make the mdes have less replcated code.
+
+// ARM data processing operations. Need to separate the commutative
+// from the non-commutative ones
+
+$def comm_DP_ops AND_W XOR_W ADD_W OR_W 
+
+// FIX: create a more thorough list of the CMPP operations, and add
+// the CMPRs. There's no need to do CMPPs other than UNs, because ARM
+// doesn't support that style of predication.
+$def non_comm_DP_ops SUB_W MOVE CMPP_W_EQ_UN_UN CMPP_W_LGT_UN_UN CMPP_W_GT_UN_UN CMPP_W_LEQ_UN_UN CMPP_W_LLEQ_UN_UN CMPP_W_LT_UN_UN CMPP_W_LLT_UN_UN
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// These first fields describe the compiler view of the pattern: what resources
+// the operation uses, where it can get it's inputs from, how many cycles it
+// takes to execute, etc.
+
+SECTION Constant_Range
+{
+  // This is the valid number of spaces we can shift an operand by according
+  // to the ARM ISA.
+  lsl_range(min(0) max(31) step(1));
+  lsr_range(min(1) max(32) step(1));
+}
+
+SECTION Constant_Set
+{
+  lsl_set(ranges(lsl_range));
+  lsr_set(ranges(lsl_range));
+}
+
+SECTION Register_File
+{
+  lsl_file(width(5) virtual(L) consts(lsl_set));
+  lsr_file(width(5) virtual(L) consts(lsr_set));
+}
+
+SECTION Field_Type
+{
+  FT_lsl_const(regfile(lsl_file));
+  FT_lsr_const(regfile(lsr_file));
+}
+
+SECTION Operation_Format
+{
+  // FIX: we don't really need all of these.
+  OF_dp_lsl_const (pred(FT_p) src(FT_ic FT_lsl_const FT_ic) dest(FT_ic));
+  OF_dp_lsl_reg   (pred(FT_p) src(FT_ic FT_ic        FT_ic) dest(FT_ic));
+  OF_dp_lsr_const (pred(FT_p) src(FT_ic FT_lsr_const FT_ic) dest(FT_ic));
+  OF_dp_lsr_reg   (pred(FT_p) src(FT_ic FT_ic        FT_ic) dest(FT_ic));
+  OF_dp_asr_const (pred(FT_p) src(FT_ic FT_lsr_const FT_ic) dest(FT_ic));
+  OF_dp_asr_reg   (pred(FT_p) src(FT_ic FT_ic        FT_ic) dest(FT_ic));
+}
+
+SECTION Scheduling_Alternative
+{
+  $for(idx in $0..(exec_units-1)) {
+    SA_dp_lsl_const_${idx} (format(OF_dp_lsl_const) latency(OL_int) resv(RT_${idx}));
+    SA_dp_lsl_reg_${idx}   (format(OF_dp_lsl_reg  ) latency(OL_int) resv(RT_${idx}));
+    SA_dp_lsr_const_${idx} (format(OF_dp_lsr_const) latency(OL_int) resv(RT_${idx}));
+    SA_dp_lsr_reg_${idx}   (format(OF_dp_lsr_reg  ) latency(OL_int) resv(RT_${idx}));
+    SA_dp_asr_const_${idx} (format(OF_dp_lsr_const) latency(OL_int) resv(RT_${idx}));
+    SA_dp_asr_reg_${idx}   (format(OF_dp_lsr_reg  ) latency(OL_int) resv(RT_${idx}));
+  }
+}
+
+SECTION Operation
+{
+  $for(idx in $0..(exec_units-1)) {
+    $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+      "${op}_LSL_${idx}" (alt(SA_dp_lsl_reg_${idx} SA_dp_lsl_const_${idx}));
+    }
+
+    $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+      "${op}_LSR_${idx}" (alt(SA_dp_lsr_reg_${idx} SA_dp_lsr_const_${idx}));
+    }
+
+    $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+      "${op}_ASR_${idx}" (alt(SA_dp_asr_reg_${idx} SA_dp_asr_const_${idx}));
+    }
+  }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The remaining section describes the pattern. That is, what does this custom
+// instruction look like as a dataflow graph of HPL-PD nodes.
+
+SECTION Pattern_Node_Flags
+{
+  LIVE_IN();
+  LIVE_OUT();
+}
+
+SECTION Pattern_Edge
+{
+  $for(shft in lsl lsr asr) {
+    $for(by in reg const) {
+      $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+        ${op}_${shft}_${by}_in1_to_${op}();
+        ${op}_${shft}_${by}_in2_to_${shft}();
+        ${op}_${shft}_${by}_in3_to_${shft}();
+        ${op}_${shft}_${by}_${shft}_to_${op}();
+        ${op}_${shft}_${by}_${op}_to_out();
+      }
+
+      $for(op in ${comm_DP_ops}) {
+        ${op}_${shft}_${by}_in1_to_${op}_comm();
+        ${op}_${shft}_${by}_in2_to_${shft}_comm();
+        ${op}_${shft}_${by}_in3_to_${shft}_comm();
+        ${op}_${shft}_${by}_${shft}_to_${op}_comm();
+        ${op}_${shft}_${by}_${op}_to_out_comm();
+      }
+    }
+  }
+}
+
+SECTION Pattern_Node
+{
+
+  // Most of the nodes in these shift graphs are identical, but there
+  // are subtle differences, which prevent us from declaring them in
+  // one big loop. We _could_ still declare the common nodes in a
+  // loop, and separately declare just the uncommon nodes, but I felt
+  // like that would be overly confusing.
+
+  //////////////////////
+  // LSL by a constant
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    ${op}_lsl_const_in1(flags(LIVE_IN) dest(${op}_lsl_const_in1_to_${op}));
+    ${op}_lsl_const_in2(flags(LIVE_IN) dest(${op}_lsl_const_in2_to_lsl));
+    ${op}_lsl_const_in3(const(lsl_set) dest(${op}_lsl_const_in3_to_lsl));
+    ${op}_lsl_const_lsl(op(SHL_W) src(${op}_lsl_const_in2_to_lsl
+                                      ${op}_lsl_const_in3_to_lsl)
+                                 dest(${op}_lsl_const_lsl_to_${op}));
+    ${op}_lsl_const_${op}(op(${op}) src(${op}_lsl_const_in1_to_${op}
+                                        ${op}_lsl_const_lsl_to_${op})
+                                   dest(${op}_lsl_const_${op}_to_out));
+    ${op}_lsl_const_out(flags(LIVE_OUT) src(${op}_lsl_const_${op}_to_out));
+  }
+
+  // Commutative DP ops can also have their sources reversed (the 5th node srcs).
+  $for(op in ${comm_DP_ops}) {
+    ${op}_lsl_const_in1_comm(flags(LIVE_IN) dest(${op}_lsl_const_in1_to_${op}_comm));
+    ${op}_lsl_const_in2_comm(flags(LIVE_IN) dest(${op}_lsl_const_in2_to_lsl_comm));
+    ${op}_lsl_const_in3_comm(const(lsl_set) dest(${op}_lsl_const_in3_to_lsl_comm));
+    ${op}_lsl_const_lsl_comm(op(SHL_W) src(${op}_lsl_const_in2_to_lsl_comm
+                                           ${op}_lsl_const_in3_to_lsl_comm)
+                                      dest(${op}_lsl_const_lsl_to_${op}_comm));
+    ${op}_lsl_const_${op}_comm(op(${op}) src(${op}_lsl_const_lsl_to_${op}_comm
+                                             ${op}_lsl_const_in1_to_${op}_comm)
+                                        dest(${op}_lsl_const_${op}_to_out_comm));
+    ${op}_lsl_const_out_comm(flags(LIVE_OUT) src(${op}_lsl_const_${op}_to_out_comm));
+  }
+
+  //////////////////////
+  // LSL by a register
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    ${op}_lsl_reg_in1(flags(LIVE_IN) dest(${op}_lsl_reg_in1_to_${op}));
+    ${op}_lsl_reg_in2(flags(LIVE_IN) dest(${op}_lsl_reg_in2_to_lsl));
+    ${op}_lsl_reg_in3(flags(LIVE_IN) dest(${op}_lsl_reg_in3_to_lsl));
+    ${op}_lsl_reg_lsl(op(SHL_W) src(${op}_lsl_reg_in2_to_lsl
+                                    ${op}_lsl_reg_in3_to_lsl)
+                               dest(${op}_lsl_reg_lsl_to_${op}));
+    ${op}_lsl_reg_${op}(op(${op}) src(${op}_lsl_reg_in1_to_${op}
+                                      ${op}_lsl_reg_lsl_to_${op})
+                                 dest(${op}_lsl_reg_${op}_to_out));
+    ${op}_lsl_reg_out(flags(LIVE_OUT) src(${op}_lsl_reg_${op}_to_out));
+  }
+
+  // Commutative DP ops can also have their sources reversed (the 5th node srcs).
+  $for(op in ${comm_DP_ops}) {
+    ${op}_lsl_reg_in1_comm(flags(LIVE_IN) dest(${op}_lsl_reg_in1_to_${op}_comm));
+    ${op}_lsl_reg_in2_comm(flags(LIVE_IN) dest(${op}_lsl_reg_in2_to_lsl_comm));
+    ${op}_lsl_reg_in3_comm(flags(LIVE_IN) dest(${op}_lsl_reg_in3_to_lsl_comm));
+    ${op}_lsl_reg_lsl_comm(op(SHL_W) src(${op}_lsl_reg_in2_to_lsl_comm
+                                         ${op}_lsl_reg_in3_to_lsl_comm)
+                                    dest(${op}_lsl_reg_lsl_to_${op}_comm));
+    ${op}_lsl_reg_${op}_comm(op(${op}) src(${op}_lsl_reg_lsl_to_${op}_comm
+                                           ${op}_lsl_reg_in1_to_${op}_comm)
+                                      dest(${op}_lsl_reg_${op}_to_out_comm));
+    ${op}_lsl_reg_out_comm(flags(LIVE_OUT) src(${op}_lsl_reg_${op}_to_out_comm));
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+
+
+  //////////////////////
+  // LSR by a constant
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    ${op}_lsr_const_in1(flags(LIVE_IN) dest(${op}_lsr_const_in1_to_${op}));
+    ${op}_lsr_const_in2(flags(LIVE_IN) dest(${op}_lsr_const_in2_to_lsr));
+    ${op}_lsr_const_in3(const(lsr_set) dest(${op}_lsr_const_in3_to_lsr));
+    ${op}_lsr_const_lsr(op(SHR_W) src(${op}_lsr_const_in2_to_lsr
+                                      ${op}_lsr_const_in3_to_lsr)
+                                 dest(${op}_lsr_const_lsr_to_${op}));
+    ${op}_lsr_const_${op}(op(${op}) src(${op}_lsr_const_in1_to_${op}
+                                        ${op}_lsr_const_lsr_to_${op})
+                                   dest(${op}_lsr_const_${op}_to_out));
+    ${op}_lsr_const_out(flags(LIVE_OUT) src(${op}_lsr_const_${op}_to_out));
+  }
+
+  // Commutative DP ops can also have their sources reversed (the 5th node srcs).
+  $for(op in ${comm_DP_ops}) {
+    ${op}_lsr_const_in1_comm(flags(LIVE_IN) dest(${op}_lsr_const_in1_to_${op}_comm));
+    ${op}_lsr_const_in2_comm(flags(LIVE_IN) dest(${op}_lsr_const_in2_to_lsr_comm));
+    ${op}_lsr_const_in3_comm(const(lsr_set) dest(${op}_lsr_const_in3_to_lsr_comm));
+    ${op}_lsr_const_lsr_comm(op(SHR_W) src(${op}_lsr_const_in2_to_lsr_comm
+                                           ${op}_lsr_const_in3_to_lsr_comm)
+                                      dest(${op}_lsr_const_lsr_to_${op}_comm));
+    ${op}_lsr_const_${op}_comm(op(${op}) src(${op}_lsr_const_lsr_to_${op}_comm
+                                             ${op}_lsr_const_in1_to_${op}_comm)
+                                        dest(${op}_lsr_const_${op}_to_out_comm));
+    ${op}_lsr_const_out_comm(flags(LIVE_OUT) src(${op}_lsr_const_${op}_to_out_comm));
+  }
+
+  //////////////////////
+  // LSR by a register
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    ${op}_lsr_reg_in1(flags(LIVE_IN) dest(${op}_lsr_reg_in1_to_${op}));
+    ${op}_lsr_reg_in2(flags(LIVE_IN) dest(${op}_lsr_reg_in2_to_lsr));
+    ${op}_lsr_reg_in3(flags(LIVE_IN) dest(${op}_lsr_reg_in3_to_lsr));
+    ${op}_lsr_reg_lsr(op(SHR_W) src(${op}_lsr_reg_in2_to_lsr
+                                    ${op}_lsr_reg_in3_to_lsr)
+                               dest(${op}_lsr_reg_lsr_to_${op}));
+    ${op}_lsr_reg_${op}(op(${op}) src(${op}_lsr_reg_in1_to_${op}
+                                      ${op}_lsr_reg_lsr_to_${op})
+                                 dest(${op}_lsr_reg_${op}_to_out));
+    ${op}_lsr_reg_out(flags(LIVE_OUT) src(${op}_lsr_reg_${op}_to_out));
+  }
+
+  // Commutative DP ops can also have their sources reversed (the 5th node srcs).
+  $for(op in ${comm_DP_ops}) {
+    ${op}_lsr_reg_in1_comm(flags(LIVE_IN) dest(${op}_lsr_reg_in1_to_${op}_comm));
+    ${op}_lsr_reg_in2_comm(flags(LIVE_IN) dest(${op}_lsr_reg_in2_to_lsr_comm));
+    ${op}_lsr_reg_in3_comm(flags(LIVE_IN) dest(${op}_lsr_reg_in3_to_lsr_comm));
+    ${op}_lsr_reg_lsr_comm(op(SHR_W) src(${op}_lsr_reg_in2_to_lsr_comm
+                                         ${op}_lsr_reg_in3_to_lsr_comm)
+                                    dest(${op}_lsr_reg_lsr_to_${op}_comm));
+    ${op}_lsr_reg_${op}_comm(op(${op}) src(${op}_lsr_reg_lsr_to_${op}_comm
+                                           ${op}_lsr_reg_in1_to_${op}_comm)
+                                      dest(${op}_lsr_reg_${op}_to_out_comm));
+    ${op}_lsr_reg_out_comm(flags(LIVE_OUT) src(${op}_lsr_reg_${op}_to_out_comm));
+  }
+
+
+  ////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////////////////////////
+
+
+  //////////////////////
+  // ASR by a constant
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    ${op}_asr_const_in1(flags(LIVE_IN) dest(${op}_asr_const_in1_to_${op}));
+    ${op}_asr_const_in2(flags(LIVE_IN) dest(${op}_asr_const_in2_to_asr));
+    ${op}_asr_const_in3(const(lsr_set) dest(${op}_asr_const_in3_to_asr));
+    ${op}_asr_const_asr(op(SHRA_W) src(${op}_asr_const_in2_to_asr
+                                       ${op}_asr_const_in3_to_asr)
+                                  dest(${op}_asr_const_asr_to_${op}));
+    ${op}_asr_const_${op}(op(${op}) src(${op}_asr_const_in1_to_${op}
+                                        ${op}_asr_const_asr_to_${op})
+                                   dest(${op}_asr_const_${op}_to_out));
+    ${op}_asr_const_out(flags(LIVE_OUT) src(${op}_asr_const_${op}_to_out));
+  }
+
+  // Commutative DP ops can also have their sources reversed (the 5th node srcs).
+  $for(op in ${comm_DP_ops}) {
+    ${op}_asr_const_in1_comm(flags(LIVE_IN) dest(${op}_asr_const_in1_to_${op}_comm));
+    ${op}_asr_const_in2_comm(flags(LIVE_IN) dest(${op}_asr_const_in2_to_asr_comm));
+    ${op}_asr_const_in3_comm(const(lsr_set) dest(${op}_asr_const_in3_to_asr_comm));
+    ${op}_asr_const_asr_comm(op(SHRA_W) src(${op}_asr_const_in2_to_asr_comm
+                                            ${op}_asr_const_in3_to_asr_comm)
+                                       dest(${op}_asr_const_asr_to_${op}_comm));
+    ${op}_asr_const_${op}_comm(op(${op}) src(${op}_asr_const_asr_to_${op}_comm
+                                             ${op}_asr_const_in1_to_${op}_comm)
+                                        dest(${op}_asr_const_${op}_to_out_comm));
+    ${op}_asr_const_out_comm(flags(LIVE_OUT) src(${op}_asr_const_${op}_to_out_comm));
+  }
+
+  //////////////////////
+  // ASR by a register
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    ${op}_asr_reg_in1(flags(LIVE_IN) dest(${op}_asr_reg_in1_to_${op}));
+    ${op}_asr_reg_in2(flags(LIVE_IN) dest(${op}_asr_reg_in2_to_asr));
+    ${op}_asr_reg_in3(flags(LIVE_IN) dest(${op}_asr_reg_in3_to_asr));
+    ${op}_asr_reg_asr(op(SHRA_W) src(${op}_asr_reg_in2_to_asr
+                                     ${op}_asr_reg_in3_to_asr)
+                                dest(${op}_asr_reg_asr_to_${op}));
+    ${op}_asr_reg_${op}(op(${op}) src(${op}_asr_reg_in1_to_${op}
+                                      ${op}_asr_reg_asr_to_${op})
+                                 dest(${op}_asr_reg_${op}_to_out));
+    ${op}_asr_reg_out(flags(LIVE_OUT) src(${op}_asr_reg_${op}_to_out));
+  }
+
+  // Commutative DP ops can also have their sources reversed (the 5th node srcs).
+  $for(op in ${comm_DP_ops}) {
+    ${op}_asr_reg_in1_comm(flags(LIVE_IN) dest(${op}_asr_reg_in1_to_${op}_comm));
+    ${op}_asr_reg_in2_comm(flags(LIVE_IN) dest(${op}_asr_reg_in2_to_asr_comm));
+    ${op}_asr_reg_in3_comm(flags(LIVE_IN) dest(${op}_asr_reg_in3_to_asr_comm));
+    ${op}_asr_reg_asr_comm(op(SHRA_W) src(${op}_asr_reg_in2_to_asr_comm
+                                          ${op}_asr_reg_in3_to_asr_comm)
+                                     dest(${op}_asr_reg_asr_to_${op}_comm));
+    ${op}_asr_reg_${op}_comm(op(${op}) src(${op}_asr_reg_asr_to_${op}_comm
+                                           ${op}_asr_reg_in1_to_${op}_comm)
+                                      dest(${op}_asr_reg_${op}_to_out_comm));
+    ${op}_asr_reg_out_comm(flags(LIVE_OUT) src(${op}_asr_reg_${op}_to_out_comm));
+  }
+
+}
+
+SECTION Customop_Graph
+{
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    $for(shft in lsl lsr asr) {
+      $for(oprnd in reg const) {
+        ${op}_${shft}_${oprnd}_graph(nodes($for (N in in1 in2 in3 ${shft} ${op} out)
+          { ${op}_${shft}_${oprnd}_${N} } ));
+      }
+    }
+  }
+
+  $for(op in ${comm_DP_ops}) {
+    $for(shft in lsl lsr asr) {
+      $for(oprnd in reg const) {
+        ${op}_${shft}_${oprnd}_graph_comm(nodes($for (N in in1 in2 in3 ${shft} ${op} out)
+          { ${op}_${shft}_${oprnd}_${N}_comm } ));
+      }
+    }
+  }
+}
+
+SECTION Custom_Operation
+{
+  // FIX: add support for multiple custom ops per cycle.
+//  $for(idx in $0..(exec_units-1)) {
+//    $for(op in ${DP_ops}) {
+//      ${op}_LSL(op!("${op}_LSL_${idx}") graph!(${op}_lsl_graph)
+//                flags!(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+//  }
+
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    $for(oprnd in const reg) {
+      ${op}_LSL_${oprnd}(op("${op}_LSL_0") graph(${op}_lsl_${oprnd}_graph)
+                         flags(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+    }
+  }
+
+  $for(op in ${comm_DP_ops}) {
+    $for(oprnd in const reg) {
+      ${op}_LSL_${oprnd}_comm(op("${op}_LSL_0") graph(${op}_lsl_${oprnd}_graph_comm)
+                              flags(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+    }
+  }
+
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    $for(oprnd in const reg) {
+      ${op}_LSR_${oprnd}(op("${op}_LSR_0") graph(${op}_lsr_${oprnd}_graph)
+                         flags(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+    }
+  }
+
+  $for(op in ${comm_DP_ops}) {
+    $for(oprnd in const reg) {
+      ${op}_LSR_${oprnd}_comm(op("${op}_LSR_0") graph(${op}_lsr_${oprnd}_graph_comm)
+                              flags(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+    }
+  }
+
+  $for(op in ${comm_DP_ops} ${non_comm_DP_ops}) {
+    $for(oprnd in const reg) {
+      ${op}_ASR_${oprnd}(op("${op}_ASR_0") graph(${op}_asr_${oprnd}_graph)
+                         flags(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+    }
+  }
+
+  $for(op in ${comm_DP_ops}) {
+    $for(oprnd in const reg) {
+      ${op}_ASR_${oprnd}_comm(op("${op}_ASR_0") graph(${op}_asr_${oprnd}_graph_comm)
+                              flags(ARITHOP INT NONSPECULATIVE CUSTOMOP));
+    }
+  }
+}
+
+

@@ -1,0 +1,792 @@
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           hpl_pd_patterns.hmdes2
+//      Authors:        Shivarama Rao K
+//      Created:        February, 2000
+//      Description:    Elcor pattern specification for merging and
+//                      operator chaining.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+// 
+// The file has the specifications of patterns for merging and 
+// operator chaining requirements.
+//
+$include "hpl_pd_patterns_std.hmdes2"
+$include "hpl_pd_ops.hmdes2"
+
+SECTION Elcor_Operand_Type
+{
+   reg(type(Register));
+   any(type(Anytype));
+   lit(type(Literal));
+}
+
+SECTION Elcor_Predicate_Operator
+{
+     plus(type("+"));
+     minus(type("-"));
+     greater(type(">"));
+     less(type("<"));
+     less_equal(type("<="));
+     greater_equal(type(">="));
+     equal(type("="));
+}
+
+SECTION Elcor_Predicate_Cmp_Operator
+{
+    equal(type("=="));
+    nequal(type("!="));
+}
+
+SECTION Elcor_Literal_Operand_Pattern
+{
+}
+
+
+
+/*
+ * Common variable operand patterns that will be used for
+ * the operand specifications.
+ */
+SECTION Elcor_Variable_Operand_Pattern
+{
+   Aany(symbol(A) type(any));
+   Bany(symbol(B) type(any));
+   Cany(symbol(C) type(any));
+   Dany(symbol(D) type(any));
+   Eany(symbol(E) type(any));
+   Fany(symbol(F) type(any));
+   Gany(symbol(G) type(any));
+
+   lit2(symbol(2) type(lit));
+   lit1(symbol(1) type(lit));
+   lit3(symbol(3) type(lit));
+   litany(symbol(cst) type(any));
+
+   Pany(symbol(P) type(any));
+   Qany(symbol(Q) type(any));
+
+   Areg(symbol(A) type(reg));
+   Breg(symbol(B) type(reg));
+   Creg(symbol(C) type(reg));
+   Dreg(symbol(D) type(reg));
+   Ereg(symbol(E) type(reg));
+   Freg(symbol(F) type(reg));
+   Greg(symbol(G) type(reg));
+
+   Preg(symbol(P) type(reg));
+   P1reg(symbol(P1) type(reg));
+   P2reg(symbol(P2) type(reg));
+   Qreg(symbol(Q) type(reg));
+   Zreg(symbol(Z) type(reg));
+   Zany(symbol(Z) type(any));
+   Z1reg(symbol(Z1) type(reg));
+   Z2reg(symbol(Z2) type(reg));
+   Z2any(symbol(Z2) type(any));
+
+   NULL1any(symbol(NULL1) type(any));
+   NULL2any(symbol(NULL2) type(any));
+   NULL3any(symbol(NULL3) type(any));
+
+   NULL1reg(symbol(NULL1) type(reg));
+   NULL2reg(symbol(NULL2) type(reg));
+   NULL3reg(symbol(NULL3) type(reg));
+
+   NULL1lit(symbol(NULL1) type(lit));
+   NULL2lit(symbol(NULL2) type(lit));
+   NULL3lit(symbol(NULL3) type(lit));
+
+   TRUE(symbol(true) type(any));
+   FALSE(symbol(false) type(any));
+}
+
+SECTION Elcor_Predicate_Result
+{
+   TRUE(result(TRUE));
+   FALSE(result(FALSE));
+   Pany(result(Pany));
+}
+
+$def OP_simple_op {}
+    $for (op in ${OP_intarith2_int} ${OP_intarith2_intshift} ${OP_intarith2_intmpy}) {
+       $def OP_simple_op ${OP_simple_op} ${op}_W
+    }
+$def OP_simple_op ${OP_simple_op} MOVE
+
+$def OP_logical_op AND_W ANDCM_W NAND_W NOR_W OR_W ORCM_W XOR_W XORCM_W 
+
+/*
+ * Specifications to replace the input patterns
+ *           MPY  A B C  p1
+ *           ADD,SUB,SADD,SSUB C D E p2
+ *
+ *        with
+ *           MPY(ADD|SUB|SADD|SSUB) A B D E if p1>=p2
+ */
+/*************************************************************************************/
+/**************************** Rule1 : Pattern Specification Start ********************/
+/*************************************************************************************/
+$def OP_rule1_op1 MPY_W 
+$def OP_rule1_op2 ADD_W SUB_W
+    $for (op in ${OP_intarith2_intsatadd} ${OP_intarith2_intsatsub}) {
+      $for (i in $1..32) {
+	$def OP_rule1_op2 ${OP_rule1_op2} ${op}${i}_W
+      }
+    }
+
+$def OP_rule1_op3 MPYADD_W MPYSUB_W
+    $for (op in ${OP_intarith3_intsatmpyadd} ${OP_intarith3_intsatmpysub}) {
+      $for (i in $1..32) {
+	$def OP_rule1_op3 ${OP_rule1_op3} ${op}${i}_W
+      }
+    }
+
+SECTION Elcor_Operation_Pattern
+{
+  rule1_op1(opcode(${OP_rule1_op1}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+  rule1_op2(opcode(${OP_rule1_op2}) srcs(Creg Dany) dests(Ereg) predicate(Qany));
+  rule1_res(opcode(${OP_rule1_op3}) srcs(Aany Bany Dany) dests(Ereg) predicate(Qany));
+}
+
+SECTION Elcor_Predicate_Expression
+{
+    rule1_pred1_expr1(pred1(Pany) operator(greater_equal) pred2(Qany));
+}
+SECTION Elcor_Predicate_Equation
+{
+   rule1_pred1(lhs(rule1_pred1_expr1) operator(equal) rhs(TRUE));
+}
+SECTION Elcor_Pattern_Rule
+{
+   rule1(input_patterns(rule1_op1 rule1_op2)
+         output_patterns(rule1_res) 
+         predicate_equations(rule1_pred1)); 
+}
+
+/*************************************************************************************/
+/**************************** Rule2:Pattern Specification Start ********************/
+/*************************************************************************************/
+/*
+ * Specifications to replace the input pattern
+ *         (MPYADD | SMPYADD* | SMPYSUB*) A B C D  if (p1)
+ *       
+ *         with
+ *         
+ *         MPY A B E
+ *         (ADD|SADD|SSUB) E C D if p1
+ *
+ */
+$def OP_rule2_op1 MPYADD_W MPYSUB_W
+    $for (op in ${OP_intarith3_intsatmpyadd} ${OP_intarith3_intsatmpysub}) {
+      $for (i in $1..32) {
+	$def OP_rule2_op1 ${OP_rule2_op1} ${op}${i}_W
+      }
+    }
+$def OP_rule2_op2 MPY_W 
+$def OP_rule2_op3 ADD_W SUB_W
+    $for (op in ${OP_intarith2_intsatadd} ${OP_intarith2_intsatsub}) {
+      $for (i in $1..32) {
+	$def OP_rule2_op3 ${OP_rule2_op3} ${op}${i}_W
+      }					     
+    }
+SECTION Elcor_Operation_Pattern
+{
+  rule2_op1(opcode(${OP_rule2_op1}) srcs(Aany Bany Cany) dests(Dreg) predicate(Pany));
+  rule2_res1(opcode(${OP_rule2_op2}) srcs(Aany Bany) dests(Ereg) predicate(Pany));
+  rule2_res2(opcode(${OP_rule2_op3}) srcs(Cany Ereg) dests(Dreg) predicate(Pany));
+}
+
+/*
+SECTION Elcor_Pattern_Rule
+{
+   rule2(input_patterns(rule2_op1)
+         output_patterns(rule2_res1 rule2_res2));
+}
+*/
+
+
+/**
+ * Specifications to replace the input patterns
+ *      SHL A (1|2|3) B
+ *      ADD B C D
+ * 
+ *     with
+ *      SH(1|2|3)ADDL A C D
+ **/
+/*************************************************************************************/
+/*********************** Rule3,4,5: Pattern Specification Start ********************/
+/*************************************************************************************/
+
+$def OP_rule3_op1 MOVE
+$def OP_rule3_op2 SHL_W 
+$def OP_rule3_op3 ADD_W
+$def OP_rule3_op4 SH1ADDL_W SH1ADDL_W
+
+$def OP_rule4_op1 MOVE
+$def OP_rule4_op2 SHL_W 
+$def OP_rule4_op3 ADD_W
+$def OP_rule4_op4 SH2ADDL_W SH2ADDL_W
+
+$def OP_rule5_op1 MOVE
+$def OP_rule5_op2 SHL_W 
+$def OP_rule5_op3 ADD_W
+$def OP_rule5_op4 SH3ADDL_W SH3ADDL_W
+
+
+SECTION Elcor_Operation_Pattern
+{
+  rule3_move(opcode(${OP_rule3_op1}) srcs(lit1) dests(Areg) predicate(Pany));
+  rule3_shl(opcode(${OP_rule3_op2}) srcs(Breg Areg) dests(Creg) predicate(Pany));
+  rule3_add(opcode(${OP_rule3_op3}) srcs(Creg Dany) dests(Ereg) predicate(Pany));
+  rule3_shladd(opcode(${OP_rule3_op4}) srcs(Breg Dany) dests(Ereg) predicate(Pany));
+
+  rule4_move(opcode(${OP_rule4_op1}) srcs(lit2) dests(Areg) predicate(Pany));
+  rule4_shl(opcode(${OP_rule4_op2}) srcs(Breg Areg) dests(Creg) predicate(Pany));
+  rule4_add(opcode(${OP_rule4_op3}) srcs(Creg Dany) dests(Ereg) predicate(Pany));
+  rule4_shladd(opcode(${OP_rule4_op4}) srcs(Breg Dany) dests(Ereg) predicate(Pany));
+
+  rule5_move(opcode(${OP_rule5_op1}) srcs(lit3) dests(Areg) predicate(Pany));
+  rule5_shl(opcode(${OP_rule5_op2}) srcs(Breg Areg) dests(Creg) predicate(Pany));
+  rule5_add(opcode(${OP_rule5_op3}) srcs(Creg Dany) dests(Ereg) predicate(Pany));
+  rule5_shladd(opcode(${OP_rule5_op4}) srcs(Breg Dany) dests(Ereg) predicate(Pany));
+}
+
+SECTION Elcor_Predicate_Expression
+{
+    rule3_pred1_expr1(pred1(Pany) operator(greater_equal) pred2(Qany));
+}
+SECTION Elcor_Predicate_Equation
+{
+   rule3_pred1(lhs(rule3_pred1_expr1) operator(equal) rhs(TRUE));
+}
+
+SECTION Elcor_Pattern_Rule
+{
+   rule3(input_patterns(rule3_move rule3_shl rule3_add)
+         output_patterns(rule3_shladd)
+         predicate_equations(rule3_pred1));
+   rule4(input_patterns(rule4_move rule4_shl rule4_add)
+         output_patterns(rule4_shladd)
+         predicate_equations(rule3_pred1));
+   rule5(input_patterns(rule5_move rule5_shl rule5_add)
+         output_patterns(rule5_shladd)
+         predicate_equations(rule3_pred1));
+}
+
+/*
+ * The Rule 6 Patterns are used to convert MPY and SUB operations to MPYRSUB
+ * operation. 
+ *
+ *         MPY  A B C  if p1
+ *         SUB  D C E  if p2
+ * will be replaced by
+ *
+ *         MPYRSUB A B D E  if (p1 > p2)
+ */
+/**********************************************************************************/
+/************************  Rule 6: Pattern specification start ********************/
+/**********************************************************************************/
+
+$def OP_rule6_op1 MPY_W 
+$def OP_rule6_op2 SUB_W
+    $for (op in ${OP_intarith2_intsatsub}) {
+      $for (i in $1..32) {
+       $def OP_rule6_op2 ${OP_rule6_op2} ${op}${i}_W
+      }
+    }
+
+$def OP_rule6_op3 MPYRSUB_W
+    $for (op in ${OP_intarith3_intsatmpyrsub}) {
+      $for (i in $1..32) {
+	$def OP_rule6_op3 ${OP_rule6_op3} ${op}${i}_W
+      }
+    }
+
+SECTION Elcor_Operation_Pattern
+{
+  rule6_op1(opcode(${OP_rule6_op1}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+  rule6_op2(opcode(${OP_rule6_op2}) srcs(Dany Creg) dests(Ereg) predicate(Qany));
+  rule6_res(opcode(${OP_rule6_op3}) srcs(Aany Bany Dany) dests(Ereg) predicate(Qany));
+}
+
+SECTION Elcor_Predicate_Expression
+{
+    rule6_pred1_expr1(pred1(Pany) operator(greater_equal) pred2(Qany));
+}
+SECTION Elcor_Predicate_Equation
+{
+   rule6_pred1(lhs(rule6_pred1_expr1) operator(equal) rhs(TRUE));
+}
+
+SECTION Elcor_Pattern_Rule
+{
+   rule6(input_patterns(rule6_op1 rule6_op2)
+         output_patterns(rule6_res) 
+         predicate_equations(rule6_pred1)); 
+}
+
+
+/* Rule 7 is used for merging two operations that are performed both at if and
+ * else parts of a conditiom.
+ *
+ * Specifications to replace the patterns
+ *     CMPP <p1,p2> <cond> Pany
+ *     (opcode) A B C if (p1)
+ *     (opcode) A B C if (p2)
+ *
+ *    with
+ *     (opcode) A B C if (true)  when p1+p2 is true
+ */
+/**********************************************************************************/
+/************************  Rule 7: Pattern Specification Start ********************/
+/**********************************************************************************/
+
+/*
+$def OP_rule7_op1 CMPP_W_LT_UN_UC CMPP_W_LT_UN_UN
+$def OP_rule7_op2 ${OP_simple_op} ${OP_logical_op} MPYADD_W MPYSUB_W
+$for (op in ${OP_intarith3_intsatmpyadd} ${OP_intarith3_intsatmpysub}) {
+  $for (i in $1..32) {
+       $def OP_rule7_op2 ${OP_rule7_op2} ${op}${i}_W
+  }
+}
+
+SECTION Elcor_Predicate_Expression
+{
+    rule7_pred1_expr1(pred1(P1reg) operator(plus) pred2(P2reg));
+}
+SECTION Elcor_Predicate_Equation
+{
+   rule7_pred1(lhs(rule7_pred1_expr1) operator(equal) rhs(Pany));
+}
+
+SECTION Elcor_Operation_Pattern
+{
+
+  rule7_op1(opcode(${OP_rule7_op1}) srcs(Aany Bany) dests(P1reg P2reg) predicate(Pany));
+
+  rule7_op2(opcode(${OP_rule7_op2}) srcs(Cany Dany NULL1any) dests(Ereg) predicate(P1reg));
+  rule7_op3(opcode() srcs(Cany Dany NULL1any) dests(Freg) predicate(P2reg));
+  rule7_res1(opcode() srcs(Cany Dany NULL1any) dests(Greg) predicate(Pany));
+  rule7_res2(opcode(MOVE) srcs(Greg) dests(Ereg) predicate(P1reg));
+  rule7_res3(opcode(MOVE) srcs(Greg) dests(Freg) predicate(P2reg));
+}
+
+SECTION Elcor_Pattern_Rule
+{
+   rule7(input_patterns(rule7_op1 rule7_op2 rule7_op3)
+         output_patterns(rule7_res1 rule7_res2 rule7_res3)
+         predicate_equations(rule7_pred1)); 
+}
+*/
+
+/*********************** Rule 7: Pattern Specification End ********************/
+
+/*Rule 8 is used for identifying saturating add patterns in the source code
+ *and to replace them with the proper single statement saturating add
+ *operation.
+ *
+ *       (ADDL|SUBL|MPYL)  A B C      P1
+ *       CMPP_W_LT_UN_UC      C 255 P2   P1
+ *       MOVE D 255    P2
+ *       CMPP_W_LT_UN_UC      C 0 P4   P3
+ *       MOVE D 0    P4
+ * 
+ *      with
+ *       SADDL10 A B D
+ *
+ *  * Rule 9 *
+ *       (ADD|SUB|MPY)  A B C      P1
+ *       CMPP_W_LT_UN_UC      C 255 P2   P1
+ *       MOVE D 255    P2
+ *       MOVE E -255
+ *       CMPP_W_LT_UN_UC      C E P4   P3
+ *       MOVE D E    P4
+ * 
+ *      with
+ *       SADD10 A B D
+ */
+SECTION Elcor_Variable_Operand_Pattern
+{
+   lit0(symbol(0) type(lit));
+
+   lit_sat_umax1 (symbol("1") type(lit));
+   lit_sat_umax2 (symbol("3") type(lit));
+   lit_sat_umax3 (symbol("7") type(lit));
+   lit_sat_umax4 (symbol("15") type(lit));
+   lit_sat_umax5 (symbol("31") type(lit));
+   lit_sat_umax6 (symbol("63") type(lit));
+   lit_sat_umax7 (symbol("127") type(lit));
+   lit_sat_umax8 (symbol("255") type(lit));
+   lit_sat_umax9 (symbol("511") type(lit));
+   lit_sat_umax10 (symbol("1023") type(lit));
+   lit_sat_umax11 (symbol("2047") type(lit));
+   lit_sat_umax12 (symbol("4095") type(lit));
+   lit_sat_umax13 (symbol("8191") type(lit));
+   lit_sat_umax14 (symbol("16383") type(lit));
+   lit_sat_umax15 (symbol("32767") type(lit));
+   lit_sat_umax16 (symbol("65535") type(lit));
+   lit_sat_umax17 (symbol("131071") type(lit));
+   lit_sat_umax18 (symbol("262143") type(lit));
+   lit_sat_umax19 (symbol("524287") type(lit));
+   lit_sat_umax20 (symbol("1048575") type(lit));
+   lit_sat_umax21 (symbol("2097151") type(lit));
+   lit_sat_umax22 (symbol("4194303") type(lit));
+   lit_sat_umax23 (symbol("8388607") type(lit));
+   lit_sat_umax24 (symbol("16777215") type(lit));
+   lit_sat_umax25 (symbol("33554431") type(lit));
+   lit_sat_umax26 (symbol("67108863") type(lit));
+   lit_sat_umax27 (symbol("134217727") type(lit));
+   lit_sat_umax28 (symbol("268435455") type(lit));
+   lit_sat_umax29 (symbol("536870911") type(lit));
+   lit_sat_umax30 (symbol("1073741823") type(lit));
+   lit_sat_umax31 (symbol("2147483647") type(lit));
+   lit_sat_umax32 (symbol("2147483647") type(lit));
+
+   lit_sat_max1 (symbol("0") type(lit));
+   lit_sat_min1 (symbol("0") type(lit));
+   
+   lit_sat_max2 (symbol("1") type(lit));
+   lit_sat_min2 (symbol("-1") type(lit));
+   
+   lit_sat_max3 (symbol("3") type(lit));
+   lit_sat_min3 (symbol("-3") type(lit));
+   
+   lit_sat_max4 (symbol("7") type(lit));
+   lit_sat_min4 (symbol("-7") type(lit));
+   
+   lit_sat_max5 (symbol("15") type(lit));
+   lit_sat_min5 (symbol("-15") type(lit));
+   
+   lit_sat_max6 (symbol("31") type(lit));
+   lit_sat_min6 (symbol("-31") type(lit));
+   
+   lit_sat_max7 (symbol("63") type(lit));
+   lit_sat_min7 (symbol("-63") type(lit));
+   
+   lit_sat_max8 (symbol("127") type(lit));
+   lit_sat_min8 (symbol("-127") type(lit));
+   
+   lit_sat_max9 (symbol("255") type(lit));
+   lit_sat_min9 (symbol("-255") type(lit));
+   
+   lit_sat_max10 (symbol("511") type(lit));
+   lit_sat_min10 (symbol("-511") type(lit));
+   
+   lit_sat_max11 (symbol("1023") type(lit));
+   lit_sat_min11 (symbol("-1023") type(lit));
+   
+   lit_sat_max12 (symbol("2047") type(lit));
+   lit_sat_min12 (symbol("-2047") type(lit));
+   
+   lit_sat_max13 (symbol("4095") type(lit));
+   lit_sat_min13 (symbol("-4095") type(lit));
+   
+   lit_sat_max14 (symbol("8191") type(lit));
+   lit_sat_min14 (symbol("-8191") type(lit));
+   
+   lit_sat_max15 (symbol("16383") type(lit));
+   lit_sat_min15 (symbol("-16383") type(lit));
+   
+   lit_sat_max16 (symbol("32767") type(lit));
+   lit_sat_min16 (symbol("-32767") type(lit));
+   
+   lit_sat_max17 (symbol("65535") type(lit));
+   lit_sat_min17 (symbol("-65535") type(lit));
+   
+   lit_sat_max18 (symbol("131071") type(lit));
+   lit_sat_min18 (symbol("-131071") type(lit));
+   
+   lit_sat_max19 (symbol("262143") type(lit));
+   lit_sat_min19 (symbol("-262143") type(lit));
+   
+   lit_sat_max20 (symbol("524287") type(lit));
+   lit_sat_min20 (symbol("-524287") type(lit));
+   
+   lit_sat_max21 (symbol("1048575") type(lit));
+   lit_sat_min21 (symbol("-1048575") type(lit));
+   
+   lit_sat_max22 (symbol("2097151") type(lit));
+   lit_sat_min22 (symbol("-2097151") type(lit));
+   
+   lit_sat_max23 (symbol("4194303") type(lit));
+   lit_sat_min23 (symbol("-4194303") type(lit));
+   
+   lit_sat_max24 (symbol("8388607") type(lit));
+   lit_sat_min24 (symbol("-8388607") type(lit));
+   
+   lit_sat_max25 (symbol("16777215") type(lit));
+   lit_sat_min25 (symbol("-16777215") type(lit));
+   
+   lit_sat_max26 (symbol("33554431") type(lit));
+   lit_sat_min26 (symbol("-33554431") type(lit));
+   
+   lit_sat_max27 (symbol("67108863") type(lit));
+   lit_sat_min27 (symbol("-67108863") type(lit));
+   
+   lit_sat_max28 (symbol("134217727") type(lit));
+   lit_sat_min28 (symbol("-134217727") type(lit));
+   
+   lit_sat_max29 (symbol("268435455") type(lit));
+   lit_sat_min29 (symbol("-268435455") type(lit));
+   
+   lit_sat_max30 (symbol("536870911") type(lit));
+   lit_sat_min30 (symbol("-536870911") type(lit));
+   
+   lit_sat_max31 (symbol("1073741823") type(lit));
+   lit_sat_min31 (symbol("-1073741823") type(lit));
+   
+   lit_sat_max32 (symbol("2147483647") type(lit));
+   lit_sat_min32 (symbol("-2147483647") type(lit));
+
+}
+   
+$def OP_rule8_op1 ADD_W SUB_W MPY_W
+$def OP_rule8_op2 CMPP_W_LT_UN_UC
+$def OP_rule8_op3 MOVE
+$def OP_rule8_op4 CMPP_W_LT_UN_UC
+$def OP_rule8_op5 MOVE
+$def OP_rule8_op6 MOVE
+
+$for (idx in $1..32) {
+  $def OP_rule8_op7_${idx} SADDL${idx}_W SSUBL${idx}_W SMPYL${idx}_W
+}
+
+   
+SECTION Elcor_Operation_Pattern
+{
+  rule8_op1(opcode(${OP_rule8_op1}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+
+  $for (idx in $1..32) {
+    rule8_op2_${idx}(opcode(${OP_rule8_op2}) srcs(lit_sat_umax${idx} Creg) dests(Preg Qreg) predicate(Pany));
+  }
+  $for (idx in $1..32) {
+   rule8_op3_${idx}(opcode(${OP_rule8_op3}) srcs(lit_sat_umax${idx}) dests(Dreg) predicate(Preg));
+  }
+
+  $for (idx in $1..32) {
+   rule8_op4_${idx}(opcode(${OP_rule8_op4}) srcs(Creg lit0) dests(Z1reg Z2reg) predicate(Qreg));
+  }
+
+  rule8_op5 (opcode(${OP_rule8_op5}) srcs(lit0) dests(Dreg) predicate(Z1reg));
+
+  rule8_op6(opcode(${OP_rule8_op6}) srcs(Creg) dests(Dreg) predicate(Z2reg));
+
+  $for (idx in $1..32) {
+   rule8_res_${idx}(opcode(${OP_rule8_op7_${idx}}) srcs(Aany Bany) dests(Dreg) predicate(Pany));
+  }
+}
+
+SECTION Elcor_Predicate_Expression
+{
+    rule8_pred1_expr1(pred1(Pany) operator(greater_equal) pred2(Preg));
+    rule8_pred1_expr2(pred1(Pany) operator(greater_equal) pred2(Qreg));
+    rule8_pred1_expr3(pred1(Pany) operator(greater_equal) pred2(Z1reg));
+    rule8_pred1_expr4(pred1(Pany) operator(greater_equal) pred2(Z2reg));
+}
+SECTION Elcor_Predicate_Equation
+{
+   rule8_pred1(lhs(rule8_pred1_expr1) operator(equal) rhs(TRUE));
+   rule8_pred2(lhs(rule8_pred1_expr2) operator(equal) rhs(TRUE));
+   rule8_pred3(lhs(rule8_pred1_expr3) operator(equal) rhs(TRUE));
+   rule8_pred4(lhs(rule8_pred1_expr4) operator(equal) rhs(TRUE));
+}
+
+SECTION Elcor_Pattern_Rule
+{
+   $for (idx in $1..32) {
+     rule8_${idx}(input_patterns(rule8_op1 rule8_op2_${idx} rule8_op3_${idx} rule8_op4_${idx} rule8_op5 rule8_op6)
+         output_patterns(rule8_res_${idx})
+         predicate_equations(rule8_pred1 rule8_pred2 rule8_pred3 rule8_pred4)); 
+   }
+}
+
+/*********************** Rule 9: Pattern Specification End ********************/
+/*Rule 9 is used for identifying saturating add patterns in the source code
+ *and to replace them with the proper single statement saturating add
+ *operation.
+ *
+ *  * Rule 9 *
+ *       (ADD|SUB|MPY)  A B C      P1
+ *       CMPP_W_LT_UN_UC      C 255 P2   P1
+ *       MOVE D 255    P2
+ *       MOVE E -255
+ *       CMPP_W_LT_UN_UC      C E P4   P3
+ *       MOVE D E    P4
+ * 
+ *      with
+ *       SADD10 A B D
+ */
+$def OP_rule9_op1 ADD_W SUB_W MPY_W
+$def OP_rule9_op3 MOVE
+$def OP_rule9_op5 MOVE
+$def OP_rule9_op6 MOVE
+
+$for (idx in $1..32) {
+  $def OP_rule9_op7_${idx} SADD${idx}_W SSUB${idx}_W SMPY${idx}_W
+}
+
+SECTION Elcor_Operation_Pattern
+{
+  rule9_op1(opcode(${OP_rule9_op1}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+
+  $for (idx in $1..32) {
+   rule9_op3_${idx}(opcode(${OP_rule9_op3}) srcs(lit_sat_max${idx}) dests(Dreg) predicate(Preg));
+  }
+
+  $for (idx in $1..32) {
+   rule9_op4_${idx}(opcode(${OP_rule8_op4}) srcs(Creg lit_sat_min${idx}) dests(Z1reg Z2reg) predicate(Qreg));
+  }
+
+  $for (idx in $1..32) {
+   rule9_op5_${idx}(opcode(${OP_rule9_op5}) srcs(lit_sat_min${idx}) dests(Dreg) predicate(Z1reg));
+  }
+
+  rule9_op6(opcode(${OP_rule9_op6}) srcs(Creg) dests(Dreg) predicate(Z2reg));
+
+  $for (idx in $1..32) {
+    rule9_res_${idx}(opcode(${OP_rule9_op7_${idx}}) srcs(Aany Bany) dests(Dreg) predicate(Pany));
+  }
+}
+SECTION Elcor_Pattern_Rule
+{
+   $for (idx in $1..32) {
+     rule9_${idx}(input_patterns(rule9_op1 rule8_op2_${idx} rule9_op3_${idx} rule9_op4_${idx} rule9_op5_${idx} rule9_op6)
+         output_patterns(rule9_res_${idx})
+         predicate_equations(rule8_pred1 rule8_pred2 rule8_pred3 rule8_pred4)); 
+   }
+}
+
+/*********************** Rule 9: Pattern Specification End ********************/
+
+
+/*********************** Rule 10: Pattern Specification Start *********************/
+/*
+ * This pattern is also used for operator chaining. The pattern is used to identify
+ * connection between three logical operations.
+ * op1 : <logical_op> A B C
+ * op2 : <logical_op> C D E
+ * op3 : <logical_op> E F G 
+ */
+SECTION Elcor_Operation_Pattern
+{
+  rule10_op1(opcode(${OP_simple_op}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+  rule10_op2(opcode(${OP_simple_op}) srcs(Creg NULL1any) dests(Ereg) predicate(Pany));
+  rule10_op3(opcode(${OP_simple_op}) srcs(Ereg Fany) dests(Greg) predicate(Pany));
+}
+SECTION Elcor_Pattern_Rule
+{
+   rule10(input_patterns(rule10_op1 rule10_op2 rule10_op3)
+         output_patterns());
+}
+/*********************** Rule 10: Pattern Specification End *********************/
+
+/*********************** Rule 11: Pattern Specification Start ********************/
+/*
+ * This pattern is used for operator chaining. If one logical operation is connected
+ * to another logical operation, the operations can be chained together. i.e
+ * intermediate latches are not necessary.
+ *
+ * op1 : <logical_op> A B C
+ * op2 : <logical_op> C D E
+ *
+ * dest_patterns (empty)
+ */
+
+SECTION Elcor_Operation_Pattern
+{
+  rule11_op1(opcode(${OP_simple_op}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+  rule11_op2(opcode(${OP_simple_op}) srcs(Creg Dany) dests(Ereg) predicate(Pany));
+}
+SECTION Elcor_Pattern_Rule
+{
+   rule11(input_patterns(rule11_op1 rule11_op2)
+         output_patterns());
+}
+/*********************** Rule 11: Pattern Specification End *********************/
+
+
+/*********************** Rule 12: Pattern specification Start *******************/
+/*
+ * This pattern will identify (r1=1.op1.2; r2=3.op2.4; r3=r1.op3.r2; r4=r1.op4.r2) 
+ * type of operation sequences. This is used for operator chaining.
+ */
+SECTION Elcor_Operation_Pattern
+{
+  rule12_op1(opcode(${OP_simple_op}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+  rule12_op2(opcode(${OP_simple_op}) srcs(Cany Dany) dests(Dreg) predicate(Pany));
+  rule12_op3(opcode(${OP_simple_op}) srcs(Creg Dreg) dests(Ereg) predicate(Pany));
+  rule12_op4(opcode(${OP_simple_op}) srcs(Creg Dreg) dests(Freg) predicate(Pany));
+}
+SECTION Elcor_Pattern_Rule
+{
+   rule12(input_patterns(rule12_op1 rule12_op2 rule12_op3 rule12_op4)
+         output_patterns());
+}
+/*********************** Rule 12: Pattern Specification End *********************/
+
+
+/*********************** Rule 13: Pattern specification Start *******************/
+/*
+ * This pattern will identify (r1=1.log_op.2; r2=r1.int_op.3; r3=r2.int_op.4; r4=r3.log_op.5) 
+ * type of operation sequences. This is used for operator chaining.
+ */
+SECTION Elcor_Operation_Pattern
+{
+  rule13_op1(opcode(${OP_simple_op}) srcs(Aany Bany) dests(Creg) predicate(Pany));
+  rule13_op2(opcode(${OP_simple_op}) srcs(Creg Dany) dests(Dreg) predicate(Pany));
+  rule13_op3(opcode(${OP_simple_op}) srcs(Dreg Eany) dests(Ereg) predicate(Pany));
+  rule13_op4(opcode(${OP_simple_op}) srcs(Ereg Fany) dests(Freg) predicate(Pany));
+}
+SECTION Elcor_Pattern_Rule
+{
+   rule13(input_patterns(rule13_op1 rule13_op2 rule13_op3 rule13_op4)
+         output_patterns());
+}
+/*********************** Rule 13: Pattern specification End *******************/
+
+/*************************************************************************************/
+/*********************** Rule14 : Pattern Specification Start ********************/
+/*************************************************************************************/
+
+$def OP_rule14_op1 SHLA_W 
+$def OP_rule14_op2 ADD_W
+$def OP_rule14_op3_1 SH1ADDL_W
+$def OP_rule14_op3_2 SH2ADDL_W
+$def OP_rule14_op3_3 SH3ADDL_W
+
+
+SECTION Elcor_Operation_Pattern
+{
+  rule14_shl_1(opcode(${OP_rule14_op1}) srcs(Areg lit1) dests(Breg) predicate(Pany));
+  rule14_shl_2(opcode(${OP_rule14_op1}) srcs(Areg lit2) dests(Breg) predicate(Pany));
+  rule14_shl_3(opcode(${OP_rule14_op1}) srcs(Areg lit3) dests(Breg) predicate(Pany));
+
+  rule14_add(opcode(${OP_rule14_op2}) srcs(Breg Cany) dests(Dreg) predicate(Pany));
+
+  rule14_shladd_1(opcode(${OP_rule14_op3_1}) srcs(Areg Cany) dests(Dreg) predicate(Pany));
+  rule14_shladd_2(opcode(${OP_rule14_op3_2}) srcs(Areg Cany) dests(Dreg) predicate(Pany));
+  rule14_shladd_3(opcode(${OP_rule14_op3_3}) srcs(Areg Cany) dests(Dreg) predicate(Pany));
+}
+
+SECTION Elcor_Predicate_Expression
+{
+    rule14_pred1_expr1(pred1(Pany) operator(greater_equal) pred2(Qany));
+}
+SECTION Elcor_Predicate_Equation
+{
+   rule14_pred1(lhs(rule14_pred1_expr1) operator(equal) rhs(TRUE));
+}
+SECTION Elcor_Pattern_Rule
+{
+   rule14_1(input_patterns(rule14_shl_1 rule14_add)
+         output_patterns(rule14_shladd_1)
+         predicate_equations(rule14_pred1));
+   rule14_2(input_patterns(rule14_shl_2 rule14_add)
+         output_patterns(rule14_shladd_2)
+         predicate_equations(rule14_pred1));
+   rule14_3(input_patterns(rule14_shl_3 rule14_add)
+         output_patterns(rule14_shladd_3)
+         predicate_equations(rule14_pred1));
+}

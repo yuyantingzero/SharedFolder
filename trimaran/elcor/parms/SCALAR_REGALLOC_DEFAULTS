@@ -1,0 +1,21 @@
+#
+#	Scalar register allocator default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Scalar_regalloc declaration
+
+    # whether or not to use macros in allocation. if set to no, then
+    # macros will be treated as reserved registers. this kills
+    # quality, but is useful for debugging the allocator.
+    
+    use_macros = yes;
+
+
+    # how magical you want the register allocator to be
+
+    magic_level = 10;
+
+end)

@@ -1,0 +1,374 @@
+$def Word16    Short
+$def Word32    Long
+$def Flag      Integer
+
+
+CREATE SECTION OperandTypes
+{
+   Char        ();
+   Short       ();
+   Long        ();
+   Integer     ();
+   Float       ();
+   Double      ();
+}
+
+
+CREATE SECTION Optimizations
+{
+   SafeSpeculation   ();
+   LocalCommonSubexpression   ();
+   LoopInvariantCodeRemoval   ();
+}
+
+
+CREATE SECTION Registers
+{
+   I_Carry       ();
+   I_Overflow    ();
+}
+
+
+CREATE SECTION Intrinsics
+  REQUIRED function_call (STRING);
+  OPTIONAL function_call_silent (STRING);
+  OPTIONAL opcode        (STRING);
+  OPTIONAL dest_type     (LINK(OperandTypes));
+  OPTIONAL src_type      (LINK(OperandTypes)*);
+  OPTIONAL src_depend    (LINK(Registers)*);
+  OPTIONAL dest_depend   (LINK(Registers)*);
+  REQUIRED enabled       (INT);
+  REQUIRED enabledopti   (LINK(Optimizations)*);
+{
+   ETSI_setCarry ( function_call("ETSI_setCarry")
+                   src_type(${Flag})
+                   dest_depend(I_Carry)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_getCarry ( function_call("ETSI_getCarry")
+                   dest_type(${Flag})
+                   src_depend(I_Carry)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+			       SafeSpeculation) );
+
+   ETSI_setOverflow   ( function_call("ETSI_setOverflow")
+                   src_type(${Flag})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_getOverflow   ( function_call("ETSI_getOverflow")
+                   dest_type(${Flag})
+                   src_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+			       SafeSpeculation) );
+
+   ETSI_add      ( function_call("ETSI_add")
+                   opcode("add_sat")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_sub      ( function_call("ETSI_sub")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_abs_s    ( function_call("ETSI_abs_s")
+                   dest_type(${Word16})
+                   src_type(${Word16})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_shl      ( function_call("ETSI_shl")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_shr      ( function_call("ETSI_shr")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_mult     ( function_call("ETSI_mult")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_mult   ( function_call("ETSI_L_mult")
+                   dest_type(${Word32})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_negate   ( function_call("ETSI_negate")
+                   dest_type(${Word16})
+                   src_type(${Word16})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_extract_h( function_call("ETSI_extract_h")
+                   dest_type(${Word16})
+                   src_type(${Word32})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_extract_l( function_call("ETSI_extract_l")
+                   dest_type(${Word16})
+                   src_type(${Word32})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_round    ( function_call("ETSI_round")
+                   dest_type(${Word16})
+                   src_type(${Word32})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_mac    ( function_call("ETSI_L_mac")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_msu    ( function_call("ETSI_L_msu")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_macNs  ( function_call("ETSI_L_macNs")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16} ${Word16})
+                   dest_depend(I_Carry I_Overflow)
+                   src_depend(I_Carry)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_msuNs  ( function_call("ETSI_L_msuNs")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16} ${Word16})
+                   dest_depend(I_Carry I_Overflow)
+                   src_depend(I_Carry)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_add    ( function_call("ETSI_L_add")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word32})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_sub    ( function_call("ETSI_L_sub")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word32})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_add_c  ( function_call("ETSI_L_add_c")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word32})
+                   dest_depend(I_Carry I_Overflow)
+                   src_depend(I_Carry)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_sub_c  ( function_call("ETSI_L_sub_c")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word32})
+                   dest_depend(I_Carry I_Overflow)
+                   src_depend(I_Carry)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_negate ( function_call("ETSI_L_negate")
+                   dest_type(${Word32})
+                   src_type(${Word32})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_mult_r   ( function_call("ETSI_mult_r")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_shl    ( function_call("ETSI_L_shl")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_shr    ( function_call("ETSI_L_shr")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_shr_r    ( function_call("ETSI_shr_r")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_mac_r    ( function_call("ETSI_mac_r")
+                   dest_type(${Word16})
+                   src_type(${Word32} ${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_msu_r    ( function_call("ETSI_msu_r")
+                   dest_type(${Word16})
+                   src_type(${Word32} ${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_deposit_h   ( function_call("ETSI_L_deposit_h")
+                   dest_type(${Word32})
+                   src_type(${Word16})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_deposit_l   ( function_call("ETSI_L_deposit_l")
+                   dest_type(${Word32})
+                   src_type(${Word16})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_shr_r  ( function_call("ETSI_L_shr_r")
+                   dest_type(${Word32})
+                   src_type(${Word32} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_abs    ( function_call("ETSI_L_abs")
+                   dest_type(${Word32})
+                   src_type(${Word32})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_L_sat    ( function_call("ETSI_L_sat")
+                   dest_type(${Word32})
+                   src_type(${Word32})
+                   dest_depend(I_Carry I_Overflow)
+                   src_depend(I_Carry I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_norm_s   ( function_call("ETSI_norm_s")
+                   dest_type(${Word16})
+                   src_type(${Word16})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+
+   ETSI_div_s    ( function_call("ETSI_div_s")
+		   function_call_silent("ETSI_div_s_SILENT")
+                   dest_type(${Word16})
+                   src_type(${Word16} ${Word16})
+                   dest_depend(I_Overflow)
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression) );
+
+   ETSI_norm_l   ( function_call("ETSI_norm_l")
+                   dest_type(${Word16})
+                   src_type(${Word32})
+                   enabled(1)
+                   enabledopti(LocalCommonSubexpression
+                               LoopInvariantCodeRemoval
+			       SafeSpeculation) );
+}
+

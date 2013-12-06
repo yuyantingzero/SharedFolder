@@ -1,0 +1,63 @@
+#!/usr/bin/perl
+
+#
+# Provides a uniform interface for identifying which phases of the
+# compiler have begun/completed, so that status output from various phases of
+# openimpact/elcor/simu can be analyzed programmatically.
+#
+# This script also allows an easy way to redirect all the phase
+# starts/ends to a separate output stream/file.
+#
+# History:
+#     - Created by Steve Lieberman <01/24/2007>
+#
+
+my $scriptname = $0;
+$scriptname =~ s/.*\///g;  # remove path, show only exec name
+
+sub dienice 
+{
+  my ($msg) = @_;
+  print "$scriptname: ERROR: $msg\n";
+  exit 1;
+}
+
+sub usage 
+{
+  print "Usage: $scriptname state phasename\n";
+  print "\n";
+  print "       state      the status of the phase. for now, this is one of:\n";
+  print "                  start, end\n";
+  print "       phasename  short one-word description of the phase\n";
+  print "\n";
+}
+
+################################################################################
+# BEGIN MAIN
+################################################################################
+
+if ($#ARGV != 1) {
+  usage();
+  dienice("Invalid arguments.");
+}
+
+my $state = shift @ARGV;
+my $phasename = shift @ARGV;
+
+
+if ($state ne 'start' && $state ne 'end') {
+  dienice("Invalid value for state: $state");
+}
+
+if ($phasename =~ /\s/) {
+  dienice("Phasename should not contain any whitespace: $phasename\n");
+}
+
+# This format is currently used by the following scripts. If you want
+# to change the format, you will need to update these scripts:
+#
+#     scripts/dubna/TccOutputReader.pl
+# 
+print "PHASE: $state $phasename\n";
+
+################################################################################

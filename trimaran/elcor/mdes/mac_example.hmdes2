@@ -1,0 +1,153 @@
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           mac_example.hmdes2
+//      Authors:        Nate Clark
+//      Created:        August 2006
+//      Description:    Sample mdes to demonstrate how to construct custom
+//                      operations that the compiler will automatically
+//                      replace. This example finds instances of multiply-
+//                      accumulate and replaces them with a new instruction.
+//                      From a high level, we are describing a directed graph
+//                      which represents the pattern to be replaced.
+//
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// These first sections describe the compiler view of the new instruction: 
+// what resources the operation uses, where it can get it's inputs from,
+// how many cycles it takes to execute, etc.
+
+SECTION Operation_Format
+{
+  // MAC is predicated, it has 3 sources that can come from the
+  // integer or control files, and it writes one result to the int or
+  // control files. The sources and destination all must be in the
+  // same cluster. The register files (FT_*) are defined in
+  // hpl_pd_pristine.hmdes2
+
+  $for (clust in $0..(num_clusters-1)) {
+    OF_mac_example_${clust} (pred(FT_p_${clust})
+                             src(FT_ic_${clust} FT_ic_${clust} FT_ic_${clust})
+                             dest(FT_ic_${clust}));
+  }
+}
+
+SECTION Scheduling_Alternative
+{
+
+  // MAC uses the format defined above, takes the latency of a standard integer multiply
+  // and uses the integer unit resource. Again, things not defined in this file (OL_*, 
+  // RT_*) are declared in hpl_pd_pristine.hmdes2.
+
+  $for(clust in $0.. (num_clusters-1)) {
+    $for (idx in $0..(integer_units-1)) {
+      SA_mac_example_${clust}_${idx} (format(OF_mac_example_${clust}) latency(OL_intmpy)
+                                      resv(RT_${clust}_i${idx}));
+    }
+  }
+}
+
+SECTION Operation
+{
+  // The quoted string defines the scheduled opcode as it will appear in the IR.
+  // The SA is all the information needed by the compiler to schedule this
+  // operation.
+
+  $for (clust in $0..(num_clusters-1)) {
+    $for (idx in $0..(integer_units-1)) {
+      "MAC_Example_${clust}.${idx}"(alt(SA_mac_example_${clust}_${idx}));
+      "MAC_Example2_${clust}.${idx}"(alt(SA_mac_example_${clust}_${idx}));
+    }
+  }
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// The remaining section describes the pattern in a dataflow graph
+// to be replaced by the instruction defined above.
+
+SECTION Pattern_Node_Flags
+{
+  // These flags are used to mark nodes in the pattern which are
+  // inputs and outputs. Input/output nodes are necessary to
+  // differentiate between, for example, a MAC with only one output
+  // and a MAC that writes both the multiply and the addition result
+  // back to a register file. These names are important, so don't
+  // change them
+
+  LIVE_IN();
+  LIVE_OUT();
+}
+
+SECTION Pattern_Edge
+{
+  // Here the dataflow edges in pattern graph are declared. An edge can have 
+  // multiple destinations. The naming scheme is arbitrary, and not used outside
+  // this file.
+
+  in1_to_mlt();
+  in2_to_mlt();
+
+  mlt_to_add();
+  in3_to_add();
+
+  add_to_out();
+
+}
+
+SECTION Pattern_Node
+{
+  // Now nodes in the pattern graph are declared and connected using the
+  // edges defined above. Nodes also need to be defined for each input and
+  // output. Again, the naming scheme is arbitrary.
+
+  input1(flags(LIVE_IN) dest(in1_to_mlt));
+  input2(flags(LIVE_IN) dest(in2_to_mlt));
+
+  // Note how multiple opcodes can be supported by a single node in the pattern.
+  // using the 'op' field. All nodes that are not inputs or outputs are expected
+  // to have one or more opcodes defined. Another thing to note is that each
+  // src/dest corresponds to a port in the operation, and that order IS important.
+  // Consider the case of a non-commutative operation, like SUB, where we need to
+  // know which operand is being subtracted.
+
+  mult(op(MPY_W MPYL_W) src(in1_to_mlt in2_to_mlt) dest(mlt_to_add));
+
+  input3(flags(LIVE_IN) dest(in3_to_add));
+
+  add(op(ADD_W ADDL_W) src(mlt_to_add in3_to_add) dest(add_to_out));
+
+  output(flags(LIVE_OUT) src(add_to_out));
+}
+
+SECTION Customop_Graph
+{
+  // Combine all the nodes, so the compiler understands what constitutes a pattern.
+
+  mac_example_graph(nodes(input1 input2 input3 mult add output));
+}
+
+SECTION Custom_Operation
+{
+  // Now connect the pattern graph with the compiler information defined
+  // at the top of this file. The name of the 'op' (appearing in quotes) 
+  // must match the one defined in 'Section Operation'. The flags specify
+  // certain properties of the operation, and are defined in hpl_pd_elcor.hmdes2
+  // Or bars '||' next to 'op' concatenate the different scheduling options
+  // which execute an opcode (in this case, every integer unit on each cluster
+  // can execute the 'MAC_example' opcode). The '!' next to graph signifies
+  // that graph is overwritten each time it is defined; this was only used so
+  // that I could define graph and flags within the $for loops.
+
+  $for (clust in $0..(num_clusters-1)) {
+    $for (idx in $0..(integer_units-1)) {
+      MAC_example(op||("MAC_Example_${clust}.${idx}")
+                  graph!(mac_example_graph)
+                  flags!(ARITHOP INT NONSPECULATIVE));
+    }
+  }
+}
+
+

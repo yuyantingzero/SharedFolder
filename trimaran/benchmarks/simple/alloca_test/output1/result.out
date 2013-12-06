@@ -1,0 +1,41 @@
+Calling alloca_test with argument 0 ...
+Contents of array allocated with alloca:
+[]
+
+Calling alloca_test with argument 1 ...
+Contents of array allocated with alloca:
+[0 ]
+
+Calling alloca_test with argument 2 ...
+Contents of array allocated with alloca:
+[0 2 ]
+
+Calling alloca_test with argument 3 ...
+Contents of array allocated with alloca:
+[0 2 4 ]
+
+Calling alloca_test with argument 4 ...
+Contents of array allocated with alloca:
+[0 2 4 6 ]
+
+Calling alloca_test with argument 5 ...
+Contents of array allocated with alloca:
+[0 2 4 6 8 ]
+
+Calling alloca_test with argument 6 ...
+Contents of array allocated with alloca:
+[0 2 4 6 8 10 ]
+
+Calling alloca_test with argument 7 ...
+Contents of array allocated with alloca:
+[0 2 4 6 8 10 12 ]
+
+Calling alloca_test with argument 8 ...
+Contents of array allocated with alloca:
+[0 2 4 6 8 10 12 14 ]
+
+Calling alloca_test with argument 9 ...
+Contents of array allocated with alloca:
+[0 2 4 6 8 10 12 14 16 ]
+
+Done

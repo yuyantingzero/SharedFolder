@@ -1,0 +1,87 @@
+#
+#	Debuggin default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Debug declaration
+    # Mdes debug file
+    mdes_debug_filename = MDES_dbg;
+
+    # Vcg graph debugging switches
+    print_vcg_graph = no;
+    vcg_graph_filename = VCG_GRAPH;
+
+    # Dot graph debugging switches
+    print_dot_graph = no;
+    dot_verbose = no;
+    dot_schedop_labels = no;
+    dot_pseudo_ops = yes;
+    # types of edges to display
+    dot_c0 = yes;
+    dot_c1 = yes;
+    dot_mem = yes;
+    dot_flow = yes;
+    dot_anti = yes;
+    dot_out = yes;
+    # output filename for ps file
+    dot_graph_filename = DOT_GRAPH;
+#
+# Size options are normalsize = 8.5 x 11
+#                  large      =  11 x 17
+#                  Large      =  24 x 36
+#                  LARGE      =  36 x 48
+#
+    dot_graph_size = normalsize;
+#
+# The orienation "default" is portrait for CFG and landscape for DFG
+# "landscape" forces landscape mode for all graphs and "portrait"
+# forces poprtrait mode for all graphs
+#
+    dot_graph_orientation = default;
+
+# Dbg knobs allow various levels of debug information to be
+# printed from various modules.
+
+    dbg_pqs = 0;     # predicate analysis
+    dbg_dfa = 0;     # dataflow analysis
+    dbg_cda = 0;     # control dependence analysis
+    dbg_sed = 0;     # scalar edge drawing
+    dbg_ms = 0;      # modulo scheduler
+    dbg_ra = 0;      # rotating register allocation
+    dbg_ss = 0;      # scalar scheduler
+    dbg_sa = 0;      # scalar allocation
+    dbg_glu = 0;     # glue code (graph library routines)
+    dbg_mdes = 0;    # mdes library
+    dbg_tree = 0;    # tree formation
+    dbg_rdef = 0;    # reaching defs
+    dbg_tdup = 0;    # tail duplication
+    dbg_opti = 0;    # classical opti
+    dbg_status = 1;  # compiler status messages
+    dbg_cpr = 0;     # control cpr
+    dbg_dcpr = 0;    # data cpr
+    dbg_genlit = 0;  # codegen, literals
+    dbg_genrio = 0;  # codegen, restricted io formats
+    dbg_genrwin = 0; # codegen, register window
+    dbg_stack = 0;   # Stack frame creation, Pracheeti
+    dbg_clst = 0;    # clustering
+    dbg_rhop = 0;    # rhop clustering
+
+# More detailed explanation of some of the debug parameter settings follows:
+#
+#  * dbg_ra
+#    1: check solution, print info messages (errors are printed as warnings)
+#    2: print reg allocation
+#    3: print code before and after commit
+#    4: print internal data (small)
+#    5: print internal data (large)
+#    6: check ir reading
+#    7: print trace of allocation procedure
+#    8: open loop additional blade is one cycle wide (normally: 0 cycle wide)
+
+#hongtaoz: dbg_block_id can be used to selectively process a specified block
+# to identify what block causes a bug.
+    dbg_block_id = 0;
+
+end)

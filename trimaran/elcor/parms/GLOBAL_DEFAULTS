@@ -1,0 +1,36 @@
+#
+#	Global default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Global declaration
+
+    # Parameter file parameters
+    punt_on_unknown_parm = no;          # warn (if NO) or punt (if YES)
+    parm_warn_file_name = stderr;
+    warn_parm_not_defined = yes;
+    warn_parm_defined_twice = yes;
+    warn_parm_not_used = yes;
+    dump_parms = no;
+    parm_dump_file_name = ELCOR_PARMS_DUMP;
+
+    # Run elcor with the specified nice value
+    nice_value = 0;
+
+    # When output is Lcode, run Impact sanity checks on the Lcode
+    check_lcode = yes;
+
+    # Print out warning messages specified by El_warn.
+    show_warnings = yes;
+
+    # Enable a core dump when assert 0 occurs.  If this is off, elcor
+    # will just exit(-2) when a failed assertion happens.
+    coredump_failed_assert = yes;
+
+    # Enable a core dump on an El_punt.  If this is off, elcor
+    # will just exit(-1).
+    coredump_on_punt = no;
+
+end)

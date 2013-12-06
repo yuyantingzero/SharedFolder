@@ -1,0 +1,21 @@
+ # IMPACT Public Release (www.crhc.uiuc.edu/IMPACT)            Version 2.33  #
+ # IMPACT Trimaran Release (www.trimaran.org)                  July 12, 1999 #
+###############################################################################
+#  Run 'read_exec_info --help | more' for documentation.
+#
+#  Source of this file's information:
+#   The Trimaran team (www.trimaran.org)
+#
+#  Revision history for this file:
+#     5/05 Steve Lieberman <lieberm 05/10/2005>
+###############################################################################
+
+DESCRIPTION="Extremely simple test of DVLIW manual path"
+SETUP="";
+PREFIX="";
+ARGS="";
+CHECK="diff ${RESULT_FILE} ${BENCH_DIR}/output1/test.OUT"
+CLEANUP="";
+
+# Simulate everything
+SKIP="0";

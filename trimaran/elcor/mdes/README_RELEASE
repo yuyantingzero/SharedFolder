@@ -1,0 +1,9 @@
+The following toplevel HPL-PD mdes files are supported in this directory.
+
+hpl_pd_elcor_std.hmdes2
+	Standard hpl_pd/elcor machine description files by Shail Aditya
+	with programmable Int, Float, Mem, Branch Units.
+
+hpl_pd_elcor_seq.hmdes2
+	Sequential hpl_pd/elcor machine description files by Shail Aditya
+	single issue with one Int, Float, Mem, Branch Units each.

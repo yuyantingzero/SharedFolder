@@ -1,0 +1,21 @@
+ # IMPACT Public Release (www.crhc.uiuc.edu/IMPACT)            Version 2.33  #
+ # IMPACT Trimaran Release (www.trimaran.org)                  July 12, 1999 #
+###############################################################################
+#  Run 'read_exec_info --help | more' for documentation.
+#
+#  Source of this file's information:
+#   The Trimaran team (www.trimaran.org)
+#
+#  Revision history for this file:
+#     2/99  Created by John C. Gyllenhaal (www.crhc.uiuc.edu/IMPACT)
+###############################################################################
+
+DESCRIPTION="Computes Nth Fibonacci number using a switch and a for loop.  This input causes an accumulator overflow."
+SETUP="";
+PREFIX="";
+ARGS="1000";
+CHECK="diff ${RESULT_FILE} ${BENCH_DIR}/output2/fib.OUT"
+CLEANUP="";
+
+# Simulate everything
+SKIP="0";

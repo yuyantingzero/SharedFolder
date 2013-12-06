@@ -1,0 +1,176 @@
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           hpl_pd_elcor_std.hmdes2
+//      Authors:        Shail Aditya
+//      Created:        February, 1996
+//      Description:    HPL-PD Architecture Description (toplevel)
+//
+/////////////////////////////////////////////////////////////////////////////
+// HPL-PD Machine Architecture Description (IFMB model. multi issue)
+
+// STANDARD HPL-PD CONFIGURATION FILE
+// Written by Shail Aditya 02/14/96
+
+$def !m_clusters        2    // # rows
+$def !n_clusters        2    // # cols
+
+$def !num_clusters	m_clusters * n_clusters
+
+// Register File sizes
+
+$def !gpr_static_size 	64
+$def !gpr_rotating_size 64
+
+$def !fpr_static_size 	64
+$def !fpr_rotating_size 64
+
+$def !pr_static_size 	64
+$def !pr_rotating_size 	64
+
+$def !cr_static_size 	64
+$def !cr_rotating_size 	64
+
+$def !btr_static_size 	64
+
+// HPL-PD 2.0 Extn
+// Literal Register File sizes
+
+$def !short_lit_size    7
+$def !memory_lit_size   10
+$def !branch_lit_size   10
+$def !long_lit_size     16
+$def !unrestricted_lit_size     32
+
+// Functional Units
+
+$def !integer_units 	1
+$def !float_units 	1
+$def !memory_units 	1
+$def !branch_units 	1
+$def !custom_units      1
+
+// this is useless, but needs to be here.
+$def !icmove_bw         2
+$def !send_recv_bw         4 
+
+// HPL-PD 2.0 Extn
+// The first param is the number of distinct local memories (each has
+// its own address space (MAX=32 right now).  The second is the number
+// of units (per cluster) to access each LM.  Currently the "local" mems
+// are accessible to all clusters.
+$def !local_memories 0
+$def !local_memory_units_per_lmem
+
+// Latency Parameters
+// sample = earliest input sampling (flow) time 
+// exception = latest input hold (anti) time (to restart from intervening exceptions)
+// latency = latest output available (flow) time 
+// reserve = earliest output allocation (anti) time (to allow draining the pipeline)
+
+$def !int_alu_sample		0
+$def !int_alu_exception		0
+$def !int_alu_latency		1
+$def !int_alu_reserve		0
+
+$def !int_cmpp_sample		0
+$def !int_cmpp_exception	0
+$def !int_cmpp_latency		1
+$def !int_cmpp_reserve		0
+
+$def !int_multiply_sample	0
+$def !int_multiply_exception	0
+$def !int_multiply_latency	3
+$def !int_multiply_reserve	0
+$def !int_multiply_add_sample	2
+
+$def !int_divide_sample		0
+$def !int_divide_exception	0
+$def !int_divide_latency	8
+$def !int_divide_reserve	0
+
+$def !float_alu_sample		0
+$def !float_alu_exception	0
+$def !float_alu_latency		3
+$def !float_alu_reserve         0
+
+$def !float_cmpp_sample		0
+$def !float_cmpp_exception	0
+$def !float_cmpp_latency	1
+$def !float_cmpp_reserve        0
+
+$def !float_multiply_sample	0
+$def !float_multiply_exception	0
+$def !float_multiply_latency	3
+$def !float_multiply_reserve	0
+
+$def !float_divide_sample	0
+$def !float_divide_exception	0
+$def !float_divide_latency	8
+$def !float_divide_reserve      0
+
+$def !post_increment_add	1
+
+$def !load_level1_sample	0
+$def !load_level1_exception	0
+$def !load_level1_latency	1
+$def !load_level1_reserve       0
+
+$def !load_level2_sample	0
+$def !load_level2_exception	0
+$def !load_level2_latency	7
+$def !load_level2_reserve       0
+
+$def !load_level3_sample	0
+$def !load_level3_exception	0
+$def !load_level3_latency	35
+$def !load_level3_reserve	0
+
+$def !dsload_level1_sample	0
+$def !dsload_level1_exception	2
+$def !dsload_level1_latency	2
+$def !dsload_level1_reserve	0
+
+$def !dsload_level2_sample	0
+$def !dsload_level2_exception	7
+$def !dsload_level2_latency	7
+$def !dsload_level2_reserve	0
+
+$def !dsload_level3_sample	0
+$def !dsload_level3_exception	35
+$def !dsload_level3_latency	35
+$def !dsload_level3_reserve	0
+
+$def !store_sample		0
+$def !store_exception		0
+$def !store_latency		1
+$def !store_reserve		0
+
+$def !dsload_verify_sample	0
+$def !dsload_verify_exception	0
+$def !dsload_verify_latency	1
+$def !dsload_verify_reserve	0
+
+$def !branch_sample		0
+$def !branch_exception		0
+$def !branch_latency		1
+$def !branch_reserve		0
+
+// HPL-PD 2.0 Extn
+$def !load_localmem_sample	0
+$def !load_localmem_exception	0
+$def !load_localmem_latency	2
+$def !load_localmem_reserve     0
+
+// HPL-PD 2.0 Extn
+$def !store_localmem_sample	0
+$def !store_localmem_exception	0
+$def !store_localmem_latency	1
+$def !store_localmem_reserve	0
+
+// Standard Mdes included files 
+$include "hpl_pd_ops.hmdes2"
+$include "structure_pristine.hmdes2"
+$include "hpl_pd_pristine.hmdes2"
+$include "hpl_pd_elcor.hmdes2"
+$include "dummy_cops.hmdes2"

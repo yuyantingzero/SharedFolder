@@ -1,0 +1,12 @@
+- Move the shift-dp combination stuff back into the elcor pattern matcher.
+
+- Long long support
+
+- Fix benchmarks that classical optis break
+
+- Smarter constant creation in codegen. That is, codegen creates a
+load if a constant is not supported by the instruction set. Sometimes
+it's faster to use two data processing instructions (shifts and ors)
+to create that constant instead. This is why gcc kicks our butt on
+md5.
+

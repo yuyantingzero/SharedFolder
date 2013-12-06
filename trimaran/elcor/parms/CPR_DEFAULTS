@@ -1,0 +1,63 @@
+#
+#	Control CPR default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+(Elcor_CPR declaration
+
+    # High level control CPR strategy, can be:
+    #   original - original method, no on-trace redundancy
+    #   max_reduce - lots of redundancy, experimental purposes only
+    cpr_strategy = original;
+
+    # If-convert a SB to frp form
+    do_frpize = yes;
+
+    # Promote predicates of individual operations
+    predicate_speculation = yes;
+
+    # Identify chains of cmpp/br pairs which control CPR may be applied
+    do_find_chains = yes;
+
+    # Block chains of branches into smaller chains by the method specified below
+        # Blocking method can be:
+        #   none - no blocking, blocks of maximal length formed,
+	#          not even max_block_length is enforced
+        #   constant - block chains by a constant, max_block_length.
+        #   heuristic - use combination of the ratios below to block chains
+        blocking_method = heuristic;
+	# Threshold for the combined exit probabilities of all brs in a cpr block
+	max_exit_ratio = 0.35;
+	#Threshold for detection of predicted taken branch
+	predict_taken_ratio = .6;
+	#Branch frequency thresholds for breaking cpr chains
+	predict_break_ratio = .20;
+	predict_pauseb_ratio = .15;
+	predict_pausea_ratio = 1.1;
+
+        # Maximum length allowed for a cpr block (in no. of branches), use -1
+        # for no limit
+        max_block_length = 10;
+
+        # Minimum length allowed for a cpr block (in no. branches).  Blocks smaller
+        # than this size are left untreated.
+        min_block_length = 2;
+
+    # Get rid of cpr blocks with only 1 cmpp/branch in them, this should always
+    # be yes, except for debugging
+    do_prune_cpr_blocks = yes;
+
+    # Insert accelerated computation of on/off trace predicates.  Also insert
+    # the block bypass branch for each chain.
+    do_bypass_branch = yes;
+
+    # Move all ops whose result is not needed on-trace, to the appropriate
+    # off-trace blocks.
+    do_off_trace_motion = yes;
+
+    # Minimum weight to perform CPR xform on.  Note, frpization and speculation
+    # done to all blocks, this just controls the rest of the xform since the
+    # the first 2 components are inexpensive.
+    min_cpr_weight = 10.0;
+end)

@@ -1,0 +1,18 @@
+#
+#	Vectorizer default parameters
+#
+#
+
+(Elcor_Vectorizer declaration
+    # 0 = unroll
+    # 1 = mostly vectorize
+    # 2 = selective vectorization
+    # 3 = 'optimal' partitioning
+    vectorize_model = 2;
+
+    vectorize_fp_only = no;
+    require_aligned_ops = no;
+    ignore_comm = no;
+    comm_through_mem = no;
+    vectorize_print_ddg = no;
+end)

@@ -1,0 +1,76 @@
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+//      File:           hpl_pd_patterns_pristine.hmdes2
+//      Authors:        Shivarama Rao K
+//      Created:        February, 2001
+//      Description:    MDES structure definitions for pattern match 
+//                      specifications
+//
+//
+/////////////////////////////////////////////////////////////////////////////
+// Standard MDES definition
+
+
+
+CREATE SECTION Elcor_Operand_Type
+REQUIRED type(STRING *);
+{
+}
+CREATE SECTION Elcor_Literal_Operand_Pattern
+REQUIRED value(STRING *);
+{
+}
+CREATE SECTION Elcor_Variable_Operand_Pattern
+REQUIRED symbol(STRING *);
+REQUIRED type(LINK(Elcor_Operand_Type));
+{
+}
+
+CREATE SECTION Elcor_Opcode_Pattern
+REQUIRED opcode(STRING *);
+{
+}
+
+CREATE SECTION Elcor_Predicate_Operator
+REQUIRED type(STRING);
+{
+}
+
+CREATE SECTION Elcor_Predicate_Result
+REQUIRED result(LINK(Elcor_Literal_Operand_Pattern|Elcor_Variable_Operand_Pattern));
+{
+}
+
+CREATE SECTION Elcor_Predicate_Cmp_Operator
+REQUIRED type(STRING);
+{
+}
+
+CREATE SECTION Elcor_Predicate_Expression
+REQUIRED pred1(LINK(Elcor_Literal_Operand_Pattern|Elcor_Variable_Operand_Pattern));
+REQUIRED operator(LINK(Elcor_Predicate_Operator));
+REQUIRED pred2(LINK(Elcor_Literal_Operand_Pattern|Elcor_Variable_Operand_Pattern));
+{
+}
+CREATE SECTION Elcor_Operation_Pattern
+REQUIRED opcode(STRING *);
+REQUIRED srcs(LINK(Elcor_Literal_Operand_Pattern | Elcor_Variable_Operand_Pattern )*);
+REQUIRED dests(LINK(Elcor_Literal_Operand_Pattern | Elcor_Variable_Operand_Pattern )*);
+REQUIRED predicate(LINK(Elcor_Literal_Operand_Pattern | Elcor_Variable_Operand_Pattern ));
+{
+}
+CREATE SECTION Elcor_Predicate_Equation
+REQUIRED lhs(LINK(Elcor_Predicate_Expression));
+REQUIRED operator(LINK(Elcor_Predicate_Cmp_Operator));
+REQUIRED rhs(LINK(Elcor_Predicate_Result));
+{
+}
+
+CREATE SECTION Elcor_Pattern_Rule
+REQUIRED input_patterns(LINK(Elcor_Operation_Pattern)*);
+OPTIONAL output_patterns(LINK(Elcor_Operation_Pattern)*);
+OPTIONAL predicate_equations(LINK(Elcor_Predicate_Equation)*);
+{
+}

@@ -1,0 +1,39 @@
+#
+#	Elcor classic optimization default parameters
+#	Elcor compiler - HP Laboratories
+#
+#
+
+
+(Elcor_Opti declaration
+
+    # Enable/disable various classical optimization, names are self
+    # descriptive. 
+    # Interesting only if do_classic_opti is turned on in Elcor_Driver section.
+    # 
+
+    # Local optimizations
+    do_local_copy_propagation = yes;
+    do_local_constant_folding = yes;
+    do_local_strength_reduction = yes;
+    do_local_operation_folding = yes;
+
+    # Global optimizations
+    do_common_subexpression_elimination = yes;
+    include_pbr_during_CSE = yes; 
+    do_forward_copy_propagation = yes;
+    do_global_cvt_elim = yes;
+
+    # Dead code elimination (global, but somewhat special)
+    do_dead_code_elimination = yes;
+
+    # Loop optimizations
+    do_loop_invariant_code_removal = yes;
+    include_loop_invariant_expressions = yes; 
+    # This parm applies to both invariant complete ops and expressions
+    only_remove_expensive_invariants = no;
+
+    # Controls whether pbrrs are moved during loop invariant code optimizations
+    include_pbr_during_LICR = no;
+
+end)

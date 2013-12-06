@@ -1,0 +1,18 @@
+ # IMPACT Public Release (www.crhc.uiuc.edu/IMPACT)            Version 2.33  #
+ # IMPACT Trimaran Release (www.trimaran.org)                  July 12, 1999 #
+###############################################################################
+#  Run 'read_compile_info --help | more' for documentation.
+#
+#  Revision history for this file:
+#     6/99  Created by John C. Gyllenhaal (www.crhc.uiuc.edu/IMPACT)
+###############################################################################
+
+
+(Pinline $BASELINE_PARMS_FILE$
+   # Don't inline, hides corner cases.
+   regroup_only=yes;
+end)
+
+# Use the baseline parameter file for all other parameter settings
+(* $BASELINE_PARMS_FILE$
+end)

@@ -1,0 +1,312 @@
+Table of Contents
+=================
+
+  1 The Simulation and Performance Monitoring Environment of Trimaran
+  2 Components of the Simulator
+  3 Installation requirements
+  4 Building the simu directory
+  5 Configuring the simulator
+  6 Using the simulator
+  7 Limitations
+
+^L
+
+The Simulation and Performance Monitoring Environment of Trimaran
+===============================================================================
+
+The goal of the HPL-PD simulation environment is to
+
+a) Convert  REBEL to  executable code and  emulate the execution  on a
+   virtual HPL-PD processor.
+
+b) Generate  run-time  information  such  as  clock  cycles taken  for
+   execution, average number of operations executed per cycle, etc.
+
+c) A  framework to  build tools that  allow the gathering  of run-time
+   information, profiling, etc.
+
+
+Design goals are
+
+a) VLIW emulation of HPL-PD
+   The  scheduling and  latency information  appears in  the execution
+   stream   of  instructions  itself.    The  instruction   stream  is
+   interpreted by a HPL-PD virtual machine which is present in form of
+   a library(libequals.a)  that needs to  be linked to.   The emulator
+   follows both the EQUALS and LTE scheduling model. 
+
+b) Platform independent design
+   The  simulation makes  little assumptions  about the  host platform
+   operating   system   and   the  machine   architecture.    Platform
+   independence  comes  mostly  due   to  the  fact  that  the  HPL-PD
+   emulatable is a low-level C  file. This file is compiled and linked
+   with the HPL-PD emulator code to form the final executable binary. 
+
+c) Interoperability
+   To allow  free inter-mixing  of HPL-PD and  host platform  code. In
+   other words, an  executable program can consist of  a mix of HPL-PD
+   emulated and host platform object(.o) files. Thus, operating system
+   and library functions can be called from the emulation environment.
+
+
+
+Components of the Simulator
+===========================
+
+a) Code generator (trimaran/simu/src/codegen)
+
+   This module  generates a  low-level C file  similar to  an assembly
+   file  from Elcor's  intermediate representation.  The file  is then
+   compiled instead  of being assembled.  C is the language  of choice
+   for  this  assembly-equivalent file  to  provide complete  platform
+   independence.  In other  words, this  file can  be compiled  on any
+   platform without any modifications.
+
+   Four files are created:
+      - A file with the .inc extension
+        The .inc file  contains external variable declarations, global
+        data, modified structure and  union layout from the original C
+        source - this information is required for inter-operation with
+        native code, other global data to hold information required by
+        the emulator at execution time.
+
+      - A file with the .tbl extension 
+        The  .tbl  file  is  a  collection of  emulation  tables.   An
+        emulation  table  holds  all  the  HPL-PD  machine  operations
+        required by the application.
+
+	One emulation table is maintained  per C procedure of the original
+	C source.
+      - A file with the .c extension
+        The .c file includes the .inc and .tbl files. It also contains
+        a  series  of  functions  which  serve  as  stub  routines  to
+        inter-operate with native / host-platform code.
+
+      - A file named benchmark_data_init.simu.c
+        This file calls function in the compiled files that initialize
+        the program's global data
+
+
+b) Emulation Library (trimaran/simu/src/emulib)
+
+   The library consists of the HPL-PD virtual machine
+	- An interpreter and a set of emulation routines form the HPL-PD
+      virtual machine.
+
+   The interpreter  is invoked on  every procedure entry.  It emulates
+   the instruction stream in a loop until the procedure returns.
+
+   There is  one emulation function for every  HPL-PD operation. These
+   emulation functions are  automatically generated from the operation
+   specification. The  specification of HPL-PD  operations consists of
+   its I/O format and its actions.
+
+   The specification is present in trimaran/simu/src/emulib/PD_ops.list
+   The generated emulation routines  and the interpreter code are also
+   present in the same directory.
+
+   "make dir" create the object directory.
+   "make genops" generates the operations. 
+   "make" will generate the operations and then build the library.
+
+   Note  that the  generated library  by default  includes speculation
+   support.  Refer to trimaran/simu/src/emulib/Makefile for details.
+
+   The HPL-PD  simulator also includes  an interface to the  Dinero IV
+   cache simulator.   To enable  the interface, explicitly  modify the
+   Makefile  in trimaran/simu/src/emulib  to include  the __PD_DINERO_
+   flag  during  compilation.   Also,  compile  the  Dinero  IV  cache
+   simulator  found in  trimaran/simu/src/dinero  (using the  included
+   Makefile customized  to the host  system). The Trimaran  C Compiler
+   script (trimaran/bin/tcc) will link with the appropriate library if
+   the -dinero flag is specified).
+
+
+
+Installation requirements
+=========================
+
+To  compile  the  the   codegenerator  and  emulation  library  launch
+"./install simu" from the top level Trimaran directory. Alternatively,
+setup the environment varilable as per trimaran/envars/envars.tcsh and
+launch make from the trimaran/simu directory.
+
+
+
+Configuring the simulator
+=========================
+
+   Note that  the parameters  described below can  also be  applied to
+   codegen directly through the -F switch.
+
+   After every change in the SIMULATOR_DEFAULTS file, simulation files
+   need to be regenerated.
+
+   The    simulator    default   parameters    can    be   found    in
+   trimaran/simu/parms/SIMULATOR_DEFAULTS.
+
+
+
+Using the simulator
+===================
+
+Refer  to the  Trimaran  C  Compiler for  information  on compiling  a
+benchmark.
+
+The  simulator produces execution  statistics and  profile information
+only if the performance_monitoring option is set to "yes".
+
+When the "dynamic_stats" parameter  is enabled, the simulator produces
+a file  called  PD_STATS  --  This  file   contains  various  run-time
+information collected from the execution of the program and is used by
+the Trimaran GUI to display the results in various formats.
+
+Here is a sample PD_STATS file:
+
+# Name of the procedure( name of the rebel file )
+Function _main (eight_bb.el)
+
+	# basic block, id, total scheduling length of the block
+        bb 1	dyn cyc:  1.00	sched len:  1
+        bb 2	dyn cyc:  2.00	sched len:  2
+        bb 3	dyn cyc:  1867.00	sched len:  10
+        bb 4	dyn cyc:  67.00	sched len:  1
+        bb 7	dyn cyc:  134.00  sched len:  1
+        bb 9	dyn cyc:  401.00	sched len:  3
+        bb 10	dyn cyc:  4.00	sched len:  5
+        bb 11	dyn cyc:  0.00	sched len:  3
+        bb 5	dyn cyc:  865.00	sched len:  7
+        bb 6	dyn cyc:  67.00	sched len:  2
+        bb 8	dyn cyc:  66.00	sched len:  2
+
+    # Total number of HPL-PD cycles spent in executing this procedure
+    Dynamic_total_cycles:  3474.00
+
+        # Same as above
+        Dynamic_total_compute_cycles:   3474.00
+
+            # Not used for now
+            Dynamic_scalar_compute_cycles:  0.00 (0.00)
+            Dynamic_loop_compute_cycles:  0.00 (0.00)
+
+    # Total number of operations executed in this procedure
+    Dynamic_total_operations:  3416.00
+
+        # The break-up of operations and percentages in parentheses
+
+        # total number of branch operations
+        Dynamic_branch:  666.00   (19.50)
+
+        # total number of memory loads
+        Dynamic_load:  0.00   (0.00)
+
+        # total number of memory stores
+        Dynamic_store:  2.00   (0.06)
+
+        # total number of integer-alu operations
+        Dynamic_ialu:  1546.00   (45.26)
+
+        # total number of floating point-alu operations
+        Dynamic_falu:  0.00   (0.00)
+
+        # total number of compare operations
+        Dynamic_cmpp:  533.00   (15.60)
+
+        # total number of prepare to branch operations
+        Dynamic_pbr:  668.00   (19.56)
+
+    # Average number of operations executed per cycle
+    Dynamic_average_issued_ops/cycle:   0.98
+
+
+    # Same as above, but the static breakup
+    Static_total_operations:  47.00
+        Static_branch:  6.00   (12.77)
+        Static_load:  0.00   (0.00)
+        Static_store:  2.00   (4.26)
+        Static_ialu:  26.00   (55.32)
+        Static_falu:  0.00   (0.00)
+        Static_cmpp:  3.00   (6.38)
+        Static_pbr:  8.00   (17.02)
+
+    # Number of extra operations added by the register allocator
+    Dynamic_regalloc_op_overhead:   0.00   (0.00)
+
+        # Same as register allocation overhead
+        Dynamic_spill_code:   0.00   (0.00)
+
+            # Caller-saved register allocation overhead
+            Dynamic_caller_save:   0.00   (0.00)
+
+            # Callee-saved register allocation overhead
+            Dynamic_callee_save:   0.00   (0.00)
+
+
+    # Same as above, but the static breakup
+    Static_regalloc_op_overhead:   0.00   (0.00)
+        Static_spill_code:   0.00   (0.00)
+            Static_caller_save:   0.00   (0.00)
+            Static_callee_save:   0.00   (0.00)
+
+
+When the "control_flow_trace" or "address_trace" options  are enabled,
+an execution trace  is created. The trace contains  enough information
+to reproduce the complete execution state. The trace is written out to
+the file PD_TRACE.
+
+Control-Flow information include:
+  a) Control-block entry 
+  b) Procedure entry
+  c) Procedure exit
+  d) Operation nullification
+
+Enabling  the  address_trace option  allows  memory  access events  to
+appear in the trace. These constitute  all the loads and stores in the
+program.
+
+Here is an  example of a PD_TRACE file (in text  mode, note that both
+"control_flow_trace" and "address_trace" have been enabled)
+
+; procedure _mm_init entered
+p _mm_init
+
+; control block 14 entered, exit control flow edge was op 63 in the last
+; block.
+c 14 63
+
+; op 81 loaded a word from the address 40324cb8 at time (cycle) 321
+LW 81 40324cb4 321
+
+; op 83 was nullified by a guarded predicate
+! 83
+
+; control block 5 entered, fell thru in this block
+c 5 0
+
+; procedure return
+^
+
+
+
+Limitations
+===========
+
+The simulator has been extensively tested on HPUX and LINUX platforms,
+with a large  suite of benchmarks such as SPECINT  92, SPECINT 95, and
+MEDIABENCH.
+
+- Currently, the  simulator supports "varargs" and  "stdargs" on LINUX
+  platforms  as well  as  HPUX platforms.   The  simulator makes  some
+  platform dependent assumptions, please report any bugs encountered.
+
+- Benchmarks which include "setjmp/longjmp" are supported, although it
+  is required that  any function which includes a  longjmp or a setjmp
+  must either be  strictly and exclusively compiled in  the native "C"
+  domain, or exclusively in the  HPL-PD domain (i.e., jumps  to HPL-PD
+  code from native C code are not allowed).
+
+- The emulation  library includes  full Data and  Control Speculation.
+  By   default,  "libequals.a"  has   minimal   speculation   support,
+  i.e., exceptions  are  suppressed   for  all  operations.  For  more
+  information,    refer    to   the    main    simulation   loop    in
+  trimaran/simu/src/emulib/PD_kernel.c.

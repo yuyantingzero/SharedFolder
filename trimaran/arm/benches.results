@@ -1,0 +1,114 @@
+164.gzip		pass
+175.vpr			pass
+176.gcc			FAIL: long long
+181.mcf			pass
+186.crafty		FAIL: long long
+197.parser		pass
+253.perlbmk		FAIL: in impact
+254.gap			FAIL: result check
+255.vortex		FAIL: result check
+256.bzip2		pass
+300.twolf		pass
+3des			pass
+blowfish		pass
+cjpeg			pass
+djpeg			pass
+epic			pass
+g721decode		pass
+g721encode		pass
+gsmdecode		pass
+gsmencode		pass
+md5			pass
+mpeg2dec		pass
+mpeg2enc		FAIL: result check (optis)
+pegwitdec		pass
+pegwitenc		pass
+rasta			pass
+rawcaudio		pass
+rawdaudio		pass
+rc4			pass
+rijndael		pass
+sha			pass
+unepic			pass
+cmp			pass
+eqn			pass
+grep			pass
+lex			pass
+wc			pass
+yacc			pass
+
+
+misha			pass
+polyhedral_mass		pass
+
+
+171.swim		pass
+172.mgrid		FAIL: result check
+177.mesa		pass
+179.art			pass
+183.equake		pass
+188.ammp		FAIL: infinite loop
+
+
+052.alvinn		FAIL: result check (classic optis)
+056.ear			pass
+
+
+008.espresso		pass
+022.li			FAIL: result check
+023.eqntott		FAIL: result check (unimplemented pipe())
+026.compress		pass
+072.sc			pass
+085.gcc			FAIL: impact
+
+
+099.go			pass
+124.m88ksim		FAIL: infinite loop
+126.gcc			FAIL: impact
+129.compress		pass
+130.li			FAIL: result check
+132.ijpeg		pass
+134.perl		FAIL: result check
+147.vortex		FAIL: result check
+
+
+olden_bh		pass
+olden_bisort		pass
+olden_em3d		pass
+olden_health		pass
+olden_mst		pass
+olden_perimeter		pass
+olden_power		pass
+olden_treeadd		pass
+olden_tsp		pass
+
+alloca_test		pass
+bmm			pass
+dag			pass
+eight			pass
+fact2			pass
+fft			pass
+fib			pass
+fib_mem			pass
+fib_rec			pass
+fir			pass
+fir_int			pass
+hyper			pass
+ifthen			pass
+local_var_test		pass
+mm			pass
+mm_double		pass
+mm_dyn			pass
+mm_int			pass
+nested			pass
+nested_complex		pass
+paraffins		pass
+parms_test		pass
+parms_test2		pass
+sqrt			pass
+strcpy			pass
+switch_test		pass
+type_test		pass
+varargs_test		pass
+wave			pass
+	
