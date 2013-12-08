@@ -1,0 +1,40 @@
+# Binary files
+*.o
+*.so
+*.a
+
+# Temp files
+*.*~
+*~
+
+# Scripts
+trimaran/scripts
+
+# Elcor and Simu
+trimaran/elcor/
+trimaran/simu/
+
+# Benchmarks
+trimaran/benchmarks/
+
+# Auto gen
+trimaran/openimpact/autom4te.cache/
+trimaran/openimpact/bin/
+trimaran/openimpact/include/
+trimaran/openimpact/inhouse/
+trimaran/openimpact/mdes/
+trimaran/openimpact/src/
+trimaran/openimpact/platform/
+
+# Misc
+trimaran/openimpact/Makefile
+trimaran/openimpact/Makefile.in
+trimaran/openimpact/aclocal.m4
+trimaran/openimpact/config.log
+trimaran/openimpact/config.status
+trimaran/openimpact/configure
+trimaran/openimpact/intrinsic.lib/.deps/
+trimaran/openimpact/intrinsic.lib/intrinsic_db.hmdes2pp
+trimaran/openimpact/intrinsic.lib/intrinsic_db.lmdes2
+
+trimaran/scripts/envrc.bash

@@ -554,7 +554,7 @@ if [ $DO_LINK -eq 1 ]; then
 
   FPST="";
   for F in `\ls [^_]*.pst` ; do FPST="$FPST $F"; done;
-  for F in `\ls _*.pst` ; do FPST="$FPST $F"; done;
+  for F in `\ls *.pst` ; do FPST="$FPST $F"; done;
 
   echo "Plink ${PLINK_EXTRA_ARG} -e pstl $FPST"
   Plink -e pstl $FPST
