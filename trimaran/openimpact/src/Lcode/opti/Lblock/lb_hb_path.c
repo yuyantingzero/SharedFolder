@@ -79,6 +79,8 @@ typedef struct _LB_hb_Path {
     int num_ops;
     int flags;
     int dep_height;
+    // Added by wbp
+    int num_branches;
 } LB_hb_Path;
 
 static L_Alloc_Pool *LB_hb_path_pool = NULL;
@@ -98,6 +100,8 @@ int LB_hb_path_max_path_exceeded = 0;
 // Added by wbp
 static double LB_hb_path_mean_exec_ratio = 0.0;
 static double LB_hb_path_mean_dep_height = 0.0;
+static int LB_hb_path_max_num_branches = 0;
+static int LB_hb_path_max_num_ops = 0;
 
 
 static LB_hb_Path *LB_hb_new_path (void);
@@ -171,6 +175,8 @@ LB_hb_new_path (void)
     path->exec_ratio = 0.0;
     path->priority = 0.0;
     path->dep_height = 0;
+    // Added by wbp
+    path->num_branches = 0;
     
     return (path);
 }
@@ -461,8 +467,11 @@ LB_hb_find_all_paths (L_Cb * start, L_Cb * end, Set blocks)
     LB_hb_path_total_zpaths = 0;
     LB_hb_path_max_path_exceeded = 0;
     
+    // Added by wbp
     LB_hb_path_mean_exec_ratio = 0.0;
     LB_hb_path_mean_dep_height = 0.0;
+    LB_hb_path_max_num_branches = 0;
+    LB_hb_path_max_num_ops = 0;
     
     LB_hb_path_all_blocks = Set_dispose (LB_hb_path_all_blocks);
     
@@ -691,6 +700,32 @@ LB_hb_find_path_dep_height (LB_hb_Path * path)
     return dep_height;
 }
 
+// Added by wbp
+static void
+LB_hb_find_path_num_branches(LB_hb_Path *path)
+{
+    int i, num_branches = 0;
+    L_Cb *cb;
+    L_Oper *oper, *new_oper;
+    L_Flow *old_flow, *new_flow;
+        
+    for (i = 0; i < path->num_blocks; i++)
+    {
+        cb = L_cb_hash_tbl_find (L_fn->cb_hash_tbl, path->blocks[i]);
+        for (oper = cb->first_op; oper; oper = oper->next_op)
+        {
+            if (L_uncond_branch_opcode (oper))
+                continue;
+            if (L_cond_branch_opcode (oper))
+            {
+                num_branches++;
+            }
+        }
+    }
+    
+    path->num_branches = num_branches;
+}
+
 
 static double
 LB_hb_find_path_priority (LB_hb_Path * path)
@@ -718,6 +753,20 @@ LB_hb_find_path_priority (LB_hb_Path * path)
             priority *= 0.25;
         else if (L_EXTRACT_BIT_VAL (path->flags, L_TRACEREGION_FLAG_HAS_JSR))
             priority *= 0.01;
+//        double o1 = path->num_ops / (double)path->dep_height * 10.8240 - path->exec_ratio;
+//        double o2 = 0.9838 * (1.1039 - LB_hb_path_max_num_ops)
+//                   - (LB_hb_path_mean_dep_height * LB_hb_path_max_num_branches - LB_hb_path_total_paths);
+//        double o3 = o1 + o2;
+//        double o4 = 1.1609 * o3;
+//        double o5 = 0.6727 * LB_hb_path_total_paths;
+//        double o6;
+//        if (!LB_hb_path_contains_excludable_hazard(path, 0)) {
+//            o6 = o4 * o5;
+//        } else {
+//            o6 = o4;
+//        }
+//        o6 *= 0.4762;
+//        priority = LB_hb_path_mean_exec_ratio * 0.8720 - 0.94 + o6;
     }
     
     return priority;
@@ -840,14 +889,14 @@ LB_hb_find_path_info (L_Cb * start, L_Cb * end, Set blocks)
     
     LB_hb_find_total_num_ops (blocks);
 
-    int num_paths = 0;
-
     List_start (LB_hb_all_paths);
     while ((ptr = (LB_hb_Path *)List_next (LB_hb_all_paths)))
     {
         LB_hb_find_path_num_ops (ptr);
         LB_hb_find_path_exec_ratio (ptr);
         LB_hb_find_path_flags (ptr);
+        // Added by wbp
+        LB_hb_find_path_num_branches(ptr);
         /* JWS 20000623
          * Don't bother to schedule paths that are ineligible anyway.
          */
@@ -861,18 +910,23 @@ LB_hb_find_path_info (L_Cb * start, L_Cb * end, Set blocks)
         }
         LB_hb_path_mean_dep_height += ptr->dep_height;
         LB_hb_path_mean_exec_ratio += ptr->exec_ratio;
-        num_paths++;
+
+        if (ptr->num_branches > LB_hb_path_max_num_branches) {
+            LB_hb_path_max_num_branches = ptr->num_branches;
+        }
+        if (ptr->num_ops > LB_hb_path_max_num_ops) {
+            LB_hb_path_max_num_ops = ptr->num_ops;
+        }
     }
     
-    LB_hb_path_mean_dep_height /= num_paths;
-    LB_hb_path_mean_exec_ratio /= num_paths;
+    LB_hb_path_mean_dep_height /= LB_hb_path_total_paths;
+    LB_hb_path_mean_exec_ratio /= LB_hb_path_total_paths;
     
     // Compute priorities in another loop
     List_start(LB_hb_all_paths);
     while ((ptr = (LB_hb_Path *)List_next(LB_hb_all_paths))) {
         if (ptr->exec_ratio >= LB_hb_path_min_exec_ratio) {
             ptr->priority = LB_hb_find_path_priority(ptr);
-            printf("Priority: %f\n", ptr->priority);
         } else {
             ptr->priority = 0.0;
         }
