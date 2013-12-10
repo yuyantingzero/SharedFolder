@@ -11,6 +11,8 @@
 #include <queue>
 #include <cmath>
 #include <map>
+#include <fstream>
+#include <sstream>
 #include <cstdlib>
 
 #define POPULATION 400
@@ -79,18 +81,28 @@ double sqrtt(double a)
     return sqrt(a);
 }
 
+double square(double a)
+{
+    return a * a;
+}
+
+double cube(double a)
+{
+    return a * a * a;
+}
+
 BinaryFunc binaryFuncs[] = {add, sub, mul, div};
 string binaryFuncDiscs[] = {"add", "sub", "mul", "div"};
 
 CBinaryFunc cBinaryFuncs[] = {cmul, tern};
 string cBinaryFuncDiscs[] = {"cmul", "tern"};
 
-UnaryFunc unaryFuncs[] = {sqrtt};
-string unaryFuncDiscs[] = {"sqrt"};
+UnaryFunc unaryFuncs[] = {sqrtt, square, cube};
+string unaryFuncDiscs[] = {"sqrt", "sq", "cube"};
 
 int numBinaryFuncs = 4;
 int numCBinaryFuncs = 2;
-int numUnaryFuncs = 1;
+int numUnaryFuncs = 3;
 
 double variables[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 string variableDiscs[] = {"dep_height", "num_ops", "exec_ratio", "num_branches",
@@ -363,6 +375,76 @@ public:
                 break;
         }
     }
+    
+    void writeTo(string filename)
+    {
+        ofstream ofile;
+        ofile.open(filename.c_str());
+        writeTo(ofile);
+        ofile.close();
+    }
+    
+    void writeTo(ofstream& ofile)
+    {
+        ofile << op << " " << vid << " " << cid << " " << bfid << " "
+        << cbfid << " " << ufid << " " << value;
+        ofile << endl;
+        if (left)
+            left->writeTo(ofile);
+        else
+            ofile << endl;
+        if (right)
+            right->writeTo(ofile);
+        else
+            ofile << endl;
+        
+    }
+    
+    static ExpTree *readFrom(string filename)
+    {
+        ifstream ifile;
+        ifile.open(filename.c_str());
+        ExpTree *tree = readFrom(ifile);
+        ifile.close();
+        return tree;
+    }
+    
+    static ExpTree *readFrom(ifstream& ifile)
+    {
+        if (!ifile)
+            return NULL;
+        string s;
+        if (!getline(ifile, s)) {
+            return NULL;
+        }
+        
+        istringstream ss(s);
+        int op;
+        int vid;
+        int cid;
+        int bfid;
+        int cbfid;
+        int ufid;
+        double value;
+        
+        if (!(ss >> op))
+            return NULL;
+        if (!(ss >> vid))
+            return NULL;
+        if (!(ss >> cid))
+            return NULL;
+        if (!(ss >> bfid))
+            return NULL;
+        if (!(ss >> cbfid))
+            return NULL;
+        if (!(ss >> ufid))
+            return NULL;
+        if (!(ss >> value))
+            return NULL;
+        
+        return new ExpTree((OP_TYPE)op, vid, cid, bfid, cbfid, ufid, value,
+                           readFrom(ifile), readFrom(ifile));
+    }
 };
 
 class Population
@@ -480,6 +562,7 @@ public:
         if (fitnesses.count(tree) == 0) {
             // mose time-consuming
             // recompile & run
+            
             fitnesses[tree] = rand() / (double)RAND_MAX;
         }
 
@@ -498,6 +581,18 @@ int main(int argc, const char * argv[])
         //cout << endl << endl << endl;
         //pop.print();
     }
+//    ExpTree *tree = new ExpTree();
+//    tree->print();
+//    cout << endl;
+//    cout << endl;
+//    cout << endl;
+//    tree->writeTo("/Users/thewbp/Desktop/1.txt");
+//    delete tree;
+//    tree = ExpTree::readFrom("/Users/thewbp/Desktop/1.txt");
+//    tree->print();
+//    cout << endl;
+//    cout << endl;
     return 0;
 }
+
 
