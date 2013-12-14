@@ -743,7 +743,7 @@ LB_hb_find_path_priority (LB_hb_Path * path)
         priority = 0.0;
     }
     else
-    {
+    {/*
         h_ratio = 1.0 - ((double) path->dep_height /
                          (double) LB_hb_path_max_dep_height);
         op_ratio = 1.0 - ((double) path->num_ops /
@@ -753,20 +753,23 @@ LB_hb_find_path_priority (LB_hb_Path * path)
             priority *= 0.25;
         else if (L_EXTRACT_BIT_VAL (path->flags, L_TRACEREGION_FLAG_HAS_JSR))
             priority *= 0.01;
-//        double o1 = path->num_ops / (double)path->dep_height * 10.8240 - path->exec_ratio;
-//        double o2 = 0.9838 * (1.1039 - LB_hb_path_max_num_ops)
-//                   - (LB_hb_path_mean_dep_height * LB_hb_path_max_num_branches - LB_hb_path_total_paths);
-//        double o3 = o1 + o2;
-//        double o4 = 1.1609 * o3;
-//        double o5 = 0.6727 * LB_hb_path_total_paths;
-//        double o6;
-//        if (!LB_hb_path_contains_excludable_hazard(path, 0)) {
-//            o6 = o4 * o5;
-//        } else {
-//            o6 = o4;
-//        }
-//        o6 *= 0.4762;
-//        priority = LB_hb_path_mean_exec_ratio * 0.8720 - 0.94 + o6;
+	//return 1.0;*/
+	    FILE *f = fopen("/home/thewbp/SharedFolder/train/input.txt", "w+");
+	    fprintf(f, "%d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %d %d %d %d",
+	        13, (double)path->dep_height, (double)path->num_ops, path->exec_ratio,
+	        (double)path->num_branches, (double)path->num_blocks,
+	        (double)LB_hb_path_max_dep_height, (double)LB_hb_path_total_ops,
+	        (double)LB_hb_path_total_paths, (double)LB_hb_path_total_zpaths,
+	        LB_hb_path_mean_exec_ratio, LB_hb_path_mean_dep_height, 
+	        (double)LB_hb_path_max_num_branches, (double)LB_hb_path_max_num_ops,
+	        3, L_EXTRACT_BIT_VAL(path->flags, L_TRACEREGION_FLAG_HAS_UNSAFE_JSR),
+	        L_EXTRACT_BIT_VAL(path->flags, L_TRACEREGION_FLAG_HAS_JSR),
+	        LB_hb_path_contains_excludable_hazard(path, 0));
+        fclose(f);
+        system("cd ~/SharedFolder/train && ./eval < /home/thewbp/SharedFolder/train/input.txt");
+		f = fopen("/home/thewbp/SharedFolder/train/eval.txt", "r+");
+		fscanf(f, "%lf", &priority);
+		fclose(f);
     }
     
     return priority;
